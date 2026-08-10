@@ -246,10 +246,7 @@
                 <label>Account Opening Date</label>
                 <input type="date" id="in-open-date" value="2021-05-13">
             </div>
-            <div class="form-group">
-                <label>Start Date of Final Clean Quarter</label>
-                <input type="date" id="in-start-date" value="2025-10-01">
-            </div>
+            
             <div class="form-group">
                 <label>Date of Death</label>
                 <input type="date" id="in-death-date" value="2025-12-06">
@@ -269,7 +266,7 @@
                     <input type="number" id="in-manual-paid" value="0">
                 </div>
                 <div id="auto-note" style="font-size: 0.9em; color: #555; margin-top: 5px;">
-                    <em>The system will automatically calculate full quarters and the maturity broken-period using Finacle logic based on the Opening Date.</em>
+                    <em>The system will automatically calculate the final quarter's start date, full quarters paid, and the maturity broken-period using Finacle rules.</em>
                 </div>
             </div>
 
@@ -410,23 +407,37 @@
             
             // Treat dates as UTC to avoid local timezone midnight bugs
             const openStr = document.getElementById('in-open-date').value;
-            const startStr = document.getElementById('in-start-date').value;
             const deathStr = document.getElementById('in-death-date').value;
             const closureStr = document.getElementById('in-closure-date').value;
 
             const openDate = new Date(openStr + 'T00:00:00Z');
-            const startDate = new Date(startStr + 'T00:00:00Z');
             const deathDate = new Date(deathStr + 'T00:00:00Z');
             const closureDate = new Date(closureStr + 'T00:00:00Z');
             
-            // Calculate Maturity Date (Exactly 5 years from Account Opening)
+            // 1. Calculate Maturity Date (Exactly 5 years from Account Opening)
             const maturityDate = new Date(openDate.valueOf());
             maturityDate.setUTCFullYear(maturityDate.getUTCFullYear() + 5);
+
+            // 2. Automate "Start Date of Final Clean Quarter"
+            // SCSS Quarters start on Jan 1, Apr 1, Jul 1, Oct 1
+            const deathMonth = deathDate.getUTCMonth(); 
+            let startMonth = 0;
+            if (deathMonth >= 0 && deathMonth <= 2) startMonth = 0; // Jan
+            else if (deathMonth >= 3 && deathMonth <= 5) startMonth = 3; // Apr
+            else if (deathMonth >= 6 && deathMonth <= 8) startMonth = 6; // Jul
+            else if (deathMonth >= 9 && deathMonth <= 11) startMonth = 9; // Oct
+            
+            let startDate = new Date(Date.UTC(deathDate.getUTCFullYear(), startMonth, 1));
+            
+            // If account was opened during this specific quarter, use the opening date instead
+            if (startDate < openDate) {
+                startDate = new Date(openDate.valueOf());
+            }
             
             let systemPaid = 0;
             let payouts = [];
 
-            // --- 1. SYSTEM OVERPAYMENT CALCULATION ---
+            // --- 3. SYSTEM OVERPAYMENT CALCULATION ---
             if (document.getElementById('check-override').checked) {
                 systemPaid = parseFloat(document.getElementById('in-manual-paid').value) || 0;
                 payouts.push({ desc: "Manual Override Entry", amount: systemPaid });
@@ -465,7 +476,7 @@
                                     iterDate = new Date(nextMonth.valueOf());
                                 } else {
                                     let year = iterDate.getUTCFullYear();
-                                    let month = iterDate.getUTCMonth() + 1;
+                                    let month = iterDate.getUTCMonth() + 1; // 1-based for daysInMonth
                                     let daysInMonth = new Date(year, month, 0).getDate();
                                     
                                     let remainingDays = maturityDate.getUTCDate() - iterDate.getUTCDate();
@@ -487,7 +498,7 @@
                 }
             }
 
-            // --- 2. TRUE ENTITLEMENT CALCULATION (SBCO AUDITOR METHOD) ---
+            // --- 4. TRUE ENTITLEMENT CALCULATION (SBCO AUDITOR METHOD) ---
             
             // A. SCSS Earned (Start Date to Date of Death, inclusive)
             const scssDays = dateDiffInDays(startDate, deathDate) + 1;
@@ -513,7 +524,7 @@
             const totalEntitlement = scssAmount + posaAmount;
             const recoveryAmount = systemPaid - totalEntitlement;
 
-            // --- 3. INJECT DATA INTO UI ---
+            // --- 5. INJECT DATA INTO UI ---
             document.getElementById('out-name').textContent = name;
             document.getElementById('out-acc').textContent = acc;
             document.getElementById('out-principal').textContent = formatIN.format(principal);
@@ -565,7 +576,7 @@
                 windowHeight: reportNode.scrollHeight
             }).then(canvas => {
                 const link = document.createElement('a');
-                link.download = 'SCSS_HIARM_Calculation_Report.png';
+                link.download = 'HIARM_Recovery_Calculation.png';
                 link.href = canvas.toDataURL('image/png');
                 link.click();
             });
