@@ -116,6 +116,26 @@
             background-color: #0c2461;
         }
 
+        .btn-small {
+            width: auto;
+            padding: 6px 12px;
+            font-size: 0.9em;
+            margin-bottom: 0;
+            background-color: var(--secondary-color);
+        }
+        
+        .btn-small:hover {
+            background-color: #3c559c;
+        }
+
+        .btn-remove {
+            background-color: var(--alert-color);
+        }
+
+        .btn-remove:hover {
+            background-color: #c0392b;
+        }
+
         #btn-download {
             background-color: #079992;
             display: none;
@@ -261,10 +281,19 @@
                     <input type="checkbox" id="check-override" onchange="toggleManualOverride()">
                     <label style="margin: 0; color: var(--alert-color);">Manual Override (Skip Auto-Calculation for System Paid Amount)</label>
                 </div>
-                <div id="manual-paid-container" style="display: none; margin-top: 10px;">
-                    <label>Total Excess Interest Paid by Finacle (₹)</label>
-                    <input type="number" id="in-manual-paid" value="0">
+                
+                <!-- Updated Manual Input Section -->
+                <div id="manual-paid-container" style="display: none; margin-top: 10px; background: white; padding: 15px; border: 1px solid var(--border-color); border-radius: 6px;">
+                    <label style="margin-bottom: 10px; display: block;">Manually Enter Excess Finacle Payments (Date & Amount)</label>
+                    <div id="manual-entries-list">
+                        <div class="manual-entry-row" style="display: flex; gap: 10px; margin-bottom: 10px;">
+                            <input type="date" class="manual-date" style="flex: 1;">
+                            <input type="number" class="manual-amount" placeholder="Amount (₹)" style="flex: 1;">
+                        </div>
+                    </div>
+                    <button type="button" class="btn-small" onclick="addManualEntry()">+ Add Another Payment</button>
                 </div>
+
                 <div id="auto-note" style="font-size: 0.9em; color: #555; margin-top: 5px;">
                     <em>The system will automatically calculate the final quarter's start date, full quarters paid, and the maturity broken-period using Finacle rules.</em>
                 </div>
@@ -380,6 +409,14 @@
             return date.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-');
         }
 
+        // Helper to format raw YYYY-MM-DD strings seamlessly
+        function formatManualDateStr(dateStr) {
+            if (!dateStr) return 'Date Not Provided';
+            const parts = dateStr.split('-');
+            if (parts.length === 3) return `${parts[2]}-${parts[1]}-${parts[0]}`;
+            return dateStr;
+        }
+
         // Exact JS Date manipulation avoiding timezone shifts
         function addDaysToDate(dateObj, days) {
             let result = new Date(dateObj.valueOf());
@@ -396,6 +433,19 @@
             const isManual = document.getElementById('check-override').checked;
             document.getElementById('manual-paid-container').style.display = isManual ? 'block' : 'none';
             document.getElementById('auto-note').style.display = isManual ? 'none' : 'block';
+        }
+
+        function addManualEntry() {
+            const container = document.getElementById('manual-entries-list');
+            const row = document.createElement('div');
+            row.className = 'manual-entry-row';
+            row.style.cssText = 'display: flex; gap: 10px; margin-bottom: 10px;';
+            row.innerHTML = `
+                <input type="date" class="manual-date" style="flex: 1;">
+                <input type="number" class="manual-amount" placeholder="Amount (₹)" style="flex: 1;">
+                <button type="button" class="btn-small btn-remove" onclick="this.parentElement.remove()">X</button>
+            `;
+            container.appendChild(row);
         }
 
         function calculateHIARM() {
@@ -419,7 +469,6 @@
             maturityDate.setUTCFullYear(maturityDate.getUTCFullYear() + 5);
 
             // 2. Automate "Start Date of Final Clean Quarter"
-            // SCSS Quarters start on Jan 1, Apr 1, Jul 1, Oct 1
             const deathMonth = deathDate.getUTCMonth(); 
             let startMonth = 0;
             if (deathMonth >= 0 && deathMonth <= 2) startMonth = 0; // Jan
@@ -429,7 +478,6 @@
             
             let startDate = new Date(Date.UTC(deathDate.getUTCFullYear(), startMonth, 1));
             
-            // If account was opened during this specific quarter, use the opening date instead
             if (startDate < openDate) {
                 startDate = new Date(openDate.valueOf());
             }
@@ -439,12 +487,28 @@
 
             // --- 3. SYSTEM OVERPAYMENT CALCULATION ---
             if (document.getElementById('check-override').checked) {
-                systemPaid = parseFloat(document.getElementById('in-manual-paid').value) || 0;
-                payouts.push({ desc: "Manual Override Entry", amount: systemPaid });
                 document.getElementById('out-auto-note').textContent = "System payment amounts provided via manual override.";
+                
+                // Grab all dynamic manual entries
+                const entryRows = document.querySelectorAll('.manual-entry-row');
+                entryRows.forEach(row => {
+                    const dateVal = row.querySelector('.manual-date').value;
+                    const amountVal = parseFloat(row.querySelector('.manual-amount').value) || 0;
+                    
+                    if (amountVal > 0) {
+                        systemPaid += amountVal;
+                        payouts.push({ desc: `Manual Payment Credited (${formatManualDateStr(dateVal)})`, amount: amountVal });
+                    }
+                });
+
+                // Fallback if checked but empty
+                if (payouts.length === 0) {
+                    payouts.push({ desc: "No manual payments entered", amount: 0 });
+                }
+
             } else {
                 document.getElementById('out-auto-note').textContent = "Automated Finacle calculation based on account remaining active up to closure/maturity.";
-                const quarterlyInterest = Math.round((principal * scssRate) / 400); // 7.4% / 4 * principal
+                const quarterlyInterest = Math.round((principal * scssRate) / 400); 
                 const monthlyInterest = ((principal * scssRate) / 400) / 3;
 
                 let tempDate = new Date(startDate.valueOf());
@@ -476,7 +540,7 @@
                                     iterDate = new Date(nextMonth.valueOf());
                                 } else {
                                     let year = iterDate.getUTCFullYear();
-                                    let month = iterDate.getUTCMonth() + 1; // 1-based for daysInMonth
+                                    let month = iterDate.getUTCMonth() + 1; 
                                     let daysInMonth = new Date(year, month, 0).getDate();
                                     
                                     let remainingDays = maturityDate.getUTCDate() - iterDate.getUTCDate();
@@ -500,12 +564,9 @@
 
             // --- 4. TRUE ENTITLEMENT CALCULATION (SBCO AUDITOR METHOD) ---
             
-            // A. SCSS Earned (Start Date to Date of Death, inclusive)
             const scssDays = dateDiffInDays(startDate, deathDate) + 1;
             const scssAmount = Math.round((principal * scssRate * scssDays) / 36500);
             
-            // B. POSA Earned (Day after Death to Day before POSA Cutoff)
-            // POSA stops accumulating on the HIARM ledger at the day before Maturity OR the day before Closure
             let posaCutoffDate = (maturityDate < closureDate) ? maturityDate : closureDate;
             let posaEndDate = addDaysToDate(posaCutoffDate, -1);
             let posaStartDate = addDaysToDate(deathDate, 1);
@@ -518,7 +579,7 @@
                 posaAmount = Math.round((principal * posaRate * posaDays) / 36500);
                 document.getElementById('row-posa').style.display = 'table-row';
             } else {
-                document.getElementById('row-posa').style.display = 'none'; // No POSA period if closed immediately
+                document.getElementById('row-posa').style.display = 'none'; 
             }
 
             const totalEntitlement = scssAmount + posaAmount;
