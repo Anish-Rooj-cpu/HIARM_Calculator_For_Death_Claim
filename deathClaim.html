@@ -3,20 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SCSS Death Claim HIARM Calculator</title>
+    <title>SCSS Death Claim HIARM Auto-Calculator</title>
     <!-- Include html2canvas for image generation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         :root {
-            --primary-color: #2c3e50;
-            --secondary-color: #34495e;
+            --primary-color: #1e3799;
+            --secondary-color: #4a69bd;
+            --alert-color: #e55039;
             --border-color: #bdc3c7;
-            --bg-color: #f9f9f9;
+            --bg-color: #f1f2f6;
         }
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #ecf0f1;
+            background-color: var(--bg-color);
             margin: 0;
             padding: 20px;
             display: flex;
@@ -26,26 +27,28 @@
 
         .container {
             width: 100%;
-            max-width: 800px;
+            max-width: 850px;
             background: white;
             padding: 30px;
             border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             margin-bottom: 20px;
         }
 
         h2 {
             text-align: center;
             color: var(--primary-color);
-            border-bottom: 2px solid var(--primary-color);
-            padding-bottom: 10px;
+            border-bottom: 3px solid var(--secondary-color);
+            padding-bottom: 15px;
             margin-top: 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         .form-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 15px;
+            gap: 20px;
             margin-bottom: 20px;
         }
 
@@ -56,86 +59,105 @@
         
         .full-width {
             grid-column: span 2;
-        }
-
-        .payment-inputs {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 10px;
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px dashed var(--border-color);
         }
 
         label {
-            font-weight: bold;
-            margin-bottom: 5px;
-            color: var(--secondary-color);
+            font-weight: 600;
+            margin-bottom: 7px;
+            color: #333;
             font-size: 0.9em;
         }
 
-        input {
-            padding: 8px;
+        input[type="text"], input[type="number"], input[type="date"] {
+            padding: 10px;
             border: 1px solid var(--border-color);
             border-radius: 4px;
             font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .checkbox-group input {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
         }
 
         button {
             background-color: var(--primary-color);
             color: white;
             border: none;
-            padding: 10px 20px;
-            font-size: 1em;
+            padding: 12px 20px;
+            font-size: 1.1em;
             cursor: pointer;
-            border-radius: 4px;
+            border-radius: 6px;
             width: 100%;
             font-weight: bold;
             margin-bottom: 10px;
+            transition: background-color 0.3s;
         }
 
         button:hover {
-            background-color: #1a252f;
+            background-color: #0c2461;
         }
 
         #btn-download {
-            background-color: #27ae60;
+            background-color: #079992;
             display: none;
         }
         
         #btn-download:hover {
-            background-color: #219653;
+            background-color: #056a65;
         }
 
         /* --- Report Section Styles --- */
         #report-wrapper {
             display: none;
             width: 100%;
-            max-width: 800px;
+            max-width: 850px;
         }
 
         .report-container {
             background: white;
             padding: 40px;
-            border: 1px solid var(--border-color);
+            border: 1px solid #ccc;
             color: #000;
         }
 
         .report-header {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
 
         .report-header h3 {
             margin: 0;
-            font-size: 1.4em;
+            font-size: 1.5em;
             text-transform: uppercase;
-            border-bottom: 1px solid #000;
-            padding-bottom: 10px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 12px;
+            color: #000;
         }
 
         .report-meta {
             display: flex;
             justify-content: space-between;
             margin-top: 15px;
-            font-size: 0.95em;
+            font-size: 1em;
             font-weight: bold;
         }
 
@@ -144,11 +166,12 @@
         }
 
         .report-section h4 {
-            background-color: #f1f1f1;
-            padding: 8px;
-            margin: 0 0 10px 0;
+            background-color: #f1f2f6;
+            padding: 10px;
+            margin: 0 0 12px 0;
             border: 1px solid #000;
-            font-size: 1em;
+            font-size: 1.1em;
+            color: #000;
         }
 
         table {
@@ -159,7 +182,7 @@
 
         th, td {
             border: 1px solid #000;
-            padding: 8px 12px;
+            padding: 10px 12px;
             text-align: left;
         }
 
@@ -173,29 +196,38 @@
         }
 
         .calculation-note {
-            font-size: 0.85em;
-            color: #555;
+            font-size: 0.9em;
+            color: #444;
             margin-bottom: 10px;
+            font-style: italic;
         }
 
         .final-row {
             background-color: #eaeaea;
-            font-size: 1.1em;
+            font-size: 1.15em;
+        }
+        
+        .recovery-row {
+            background-color: #e55039;
+            color: white;
+            font-size: 1.25em;
+            text-transform: uppercase;
         }
 
         .footer-note {
-            font-size: 0.85em;
+            font-size: 0.9em;
             font-style: italic;
-            margin-top: 20px;
-            border-top: 1px dashed #ccc;
-            padding-top: 10px;
+            margin-top: 25px;
+            border-top: 1px dashed #000;
+            padding-top: 15px;
+            color: #333;
         }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h2>SCSS HIARM Calculator Input</h2>
+        <h2>SCSS HIARM Auto-Calculator</h2>
         
         <div class="form-grid">
             <div class="form-group">
@@ -210,26 +242,36 @@
                 <label>Principal Amount (₹)</label>
                 <input type="number" id="in-principal" value="300000">
             </div>
-            
             <div class="form-group">
                 <label>Start Date of Final Clean Quarter</label>
                 <input type="date" id="in-start-date" value="2025-10-01">
             </div>
+            
             <div class="form-group">
                 <label>Date of Death</label>
                 <input type="date" id="in-death-date" value="2025-12-06">
             </div>
             <div class="form-group">
-                <label>Maturity Date</label>
+                <label>Maturity Date (5 Years from open)</label>
                 <input type="date" id="in-maturity-date" value="2026-05-13">
             </div>
             
+            <div class="form-group">
+                <label>Date of Claim Closure (In Finacle)</label>
+                <input type="date" id="in-closure-date" value="2026-06-22">
+            </div>
+
             <div class="form-group full-width">
-                <label>Interest Credited by Finacle (Enter all automated payouts since the last clean quarter)</label>
-                <div class="payment-inputs">
-                    <input type="number" id="in-pay1" value="5550" placeholder="Quarter 1 (e.g. 5550)">
-                    <input type="number" id="in-pay2" value="5550" placeholder="Quarter 2 (e.g. 5550)">
-                    <input type="number" id="in-pay3" value="2566" placeholder="Broken Period (e.g. 2566)">
+                <div class="checkbox-group">
+                    <input type="checkbox" id="check-override" onchange="toggleManualOverride()">
+                    <label style="margin: 0; color: var(--alert-color);">Manual Override (Skip Auto-Calculation for System Paid Amount)</label>
+                </div>
+                <div id="manual-paid-container" style="display: none; margin-top: 10px;">
+                    <label>Total Excess Interest Paid by Finacle (₹)</label>
+                    <input type="number" id="in-manual-paid" value="0">
+                </div>
+                <div id="auto-note" style="font-size: 0.9em; color: #555; margin-top: 5px;">
+                    <em>The system will automatically calculate full quarters and the maturity broken-period using Finacle logic.</em>
                 </div>
             </div>
 
@@ -243,7 +285,7 @@
             </div>
         </div>
 
-        <button onclick="calculateHIARM()">Calculate HIARM Adjustment</button>
+        <button onclick="calculateHIARM()">Generate HIARM Report</button>
     </div>
 
     <button id="btn-download" onclick="downloadImage()">⬇ Download Report as Image</button>
@@ -251,38 +293,32 @@
     <div id="report-wrapper">
         <div id="report-container" class="report-container">
             <div class="report-header">
-                <h3>SCSS DEATH CLAIM: HIARM ADJUSTMENT CALCULATION</h3>
+                <h3>OFFICIAL SCSS DEATH CLAIM: SBCO AUDITOR CALCULATION</h3>
                 <div class="report-meta">
                     <span>Depositor: <span id="out-name"></span></span>
                     <span>Account No: ***<span id="out-acc"></span></span>
-                </div>
-                <div class="report-meta">
                     <span>Principal: ₹<span id="out-principal"></span></span>
-                    <span>Date of Death: <span id="out-death-date"></span></span>
+                </div>
+                <div class="report-meta" style="margin-top: 8px;">
+                    <span>Death Date: <span id="out-death-date"></span></span>
                     <span>Maturity Date: <span id="out-maturity-date"></span></span>
+                    <span>Closure Date: <span id="out-closure-date"></span></span>
                 </div>
             </div>
 
             <div class="report-section">
                 <h4>1. TOTAL INTEREST PAID BY SYSTEM (OVERPAYMENT)</h4>
-                <div class="calculation-note">Automated interest credited to savings after the last clean quarter, including broken-period maturity payouts.</div>
+                <div class="calculation-note" id="out-auto-note">Automated Finacle calculation based on account remaining active up to closure/maturity.</div>
                 <table>
-                    <tr>
-                        <th>Description</th>
-                        <th class="amount-col">Amount Credited</th>
-                    </tr>
-                    <tr id="row-pay1" style="display:none;">
-                        <td>Automated Quarter Payout 1</td>
-                        <td class="amount-col">₹<span id="out-pay1"></span></td>
-                    </tr>
-                    <tr id="row-pay2" style="display:none;">
-                        <td>Automated Quarter Payout 2</td>
-                        <td class="amount-col">₹<span id="out-pay2"></span></td>
-                    </tr>
-                    <tr id="row-pay3" style="display:none;">
-                        <td>Final Broken-Period Interest (Till Maturity)</td>
-                        <td class="amount-col">₹<span id="out-pay3"></span></td>
-                    </tr>
+                    <thead>
+                        <tr>
+                            <th>Description</th>
+                            <th class="amount-col">Amount Credited</th>
+                        </tr>
+                    </thead>
+                    <tbody id="payout-table-body">
+                        <!-- Dynamic Rows Injected Here -->
+                    </tbody>
                     <tr class="final-row">
                         <td><strong>TOTAL SYSTEM PAYOUT TO RECOVER</strong></td>
                         <td class="amount-col"><strong>₹<span id="out-system-paid"></span></strong></td>
@@ -292,7 +328,7 @@
 
             <div class="report-section">
                 <h4>2. TRUE LEGAL ENTITLEMENT (STRICT DAILY CALCULATION)</h4>
-                <div class="calculation-note">Exact daily earnings separated into pre-death (SCSS) and post-death (POSA) periods up to maturity.</div>
+                <div class="calculation-note">Auditor rule: Exact daily earnings separated into pre-death (SCSS) and post-death (POSA) periods.</div>
                 <table>
                     <tr>
                         <th>Component</th>
@@ -304,7 +340,7 @@
                         <td><span id="out-scss-period"></span> (<span id="out-scss-days"></span> Days)</td>
                         <td class="amount-col">₹<span id="out-scss-amount"></span></td>
                     </tr>
-                    <tr>
+                    <tr id="row-posa">
                         <td><strong>B. POSA Earned (Post-Death)</strong></td>
                         <td><span id="out-posa-period"></span> (<span id="out-posa-days"></span> Days)</td>
                         <td class="amount-col">₹<span id="out-posa-amount"></span></td>
@@ -318,17 +354,17 @@
 
             <div class="report-section">
                 <h4>3. NET DIFFERENCE (FINAL HIARM DEBIT ENTRY)</h4>
-                <div class="calculation-note">The exact adjustment amount to be recovered via HIARM to balance the ledger.</div>
+                <div class="calculation-note">The exact adjustment amount to be authorized via HIARM to balance the SCSS ledger.</div>
                 <table>
                     <tr>
-                        <td>Total Paid by Finacle</td>
+                        <td>Total Overpaid by Finacle</td>
                         <td class="amount-col">₹<span id="out-system-paid-2"></span></td>
                     </tr>
                     <tr>
-                        <td>Less: Total Valid Entitlement</td>
+                        <td>Less: True Total Legal Entitlement</td>
                         <td class="amount-col">- ₹<span id="out-total-entitlement-2"></span></td>
                     </tr>
-                    <tr class="final-row">
+                    <tr class="recovery-row">
                         <td><strong>NET RECOVERY AMOUNT (HIARM DEBIT)</strong></td>
                         <td class="amount-col"><strong>₹<span id="out-recovery-amount"></span></strong></td>
                     </tr>
@@ -336,111 +372,183 @@
             </div>
             
             <div class="footer-note">
-                Note: Execute the Net Recovery Amount as a HIARM Debit to balance the SCSS ledger. The system will auto-calculate Post-Maturity POSA interest (if any) during the final closure step.
+                <strong>Note to Operator:</strong> Execute the Net Recovery Amount as a HIARM Debit to perfectly balance the SCSS ledger up to the End Date. If the account crossed maturity, Post-Maturity Interest (PMI) will be auto-calculated by Finacle during final closure.
             </div>
         </div>
     </div>
 
     <script>
-        // Formatter for Indian Rupees
         const formatIN = new Intl.NumberFormat('en-IN');
         
-        // Formatter for Dates (DD-MM-YYYY)
         function formatDate(dateStr) {
             const date = new Date(dateStr);
-            return date.toLocaleDateString('en-GB').replace(/\//g, '-');
+            return date.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-');
         }
 
-        // Add days to a date string and return formatted string
-        function addDays(dateStr, days) {
-            const date = new Date(dateStr);
-            date.setDate(date.getDate() + days);
-            return date.toISOString().split('T')[0];
+        // Exact JS Date manipulation avoiding timezone shifts
+        function addDaysToDate(dateObj, days) {
+            let result = new Date(dateObj.valueOf());
+            result.setUTCDate(result.getUTCDate() + days);
+            return result;
+        }
+        
+        function dateDiffInDays(startObj, endObj) {
+            const msPerDay = 1000 * 60 * 60 * 24;
+            return Math.floor((endObj.getTime() - startObj.getTime()) / msPerDay);
+        }
+
+        function toggleManualOverride() {
+            const isManual = document.getElementById('check-override').checked;
+            document.getElementById('manual-paid-container').style.display = isManual ? 'block' : 'none';
+            document.getElementById('auto-note').style.display = isManual ? 'none' : 'block';
         }
 
         function calculateHIARM() {
-            // Get inputs
             const name = document.getElementById('in-name').value;
             const acc = document.getElementById('in-acc').value;
             const principal = parseFloat(document.getElementById('in-principal').value);
-            
-            const pay1 = parseFloat(document.getElementById('in-pay1').value) || 0;
-            const pay2 = parseFloat(document.getElementById('in-pay2').value) || 0;
-            const pay3 = parseFloat(document.getElementById('in-pay3').value) || 0;
-            const systemPaid = pay1 + pay2 + pay3;
-
             const scssRate = parseFloat(document.getElementById('in-scss-rate').value);
             const posaRate = parseFloat(document.getElementById('in-posa-rate').value);
             
-            const startDateStr = document.getElementById('in-start-date').value;
-            const deathDateStr = document.getElementById('in-death-date').value;
-            const maturityDateStr = document.getElementById('in-maturity-date').value;
+            // Treat dates as UTC to avoid local timezone midnight bugs
+            const startStr = document.getElementById('in-start-date').value;
+            const deathStr = document.getElementById('in-death-date').value;
+            const maturityStr = document.getElementById('in-maturity-date').value;
+            const closureStr = document.getElementById('in-closure-date').value;
 
-            // Date Calculations
-            const startDate = new Date(startDateStr);
-            const deathDate = new Date(deathDateStr);
-            const maturityDate = new Date(maturityDateStr);
-
-            // SCSS Days: Start Date to Date of Death (inclusive)
-            const scssDays = Math.round((deathDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+            const startDate = new Date(startStr + 'T00:00:00Z');
+            const deathDate = new Date(deathStr + 'T00:00:00Z');
+            const maturityDate = new Date(maturityStr + 'T00:00:00Z');
+            const closureDate = new Date(closureStr + 'T00:00:00Z');
             
-            // POSA Period: Day after death to Day before Maturity
-            const posaStartStr = addDays(deathDateStr, 1);
-            const posaEndStr = addDays(maturityDateStr, -1);
-            const posaStartDate = new Date(posaStartStr);
-            const posaEndDate = new Date(posaEndStr);
-            
-            // POSA Days
-            const posaDays = Math.round((posaEndDate - posaStartDate) / (1000 * 60 * 60 * 24)) + 1;
+            let systemPaid = 0;
+            let payouts = [];
 
-            // Money Calculations
+            // --- 1. SYSTEM OVERPAYMENT CALCULATION ---
+            if (document.getElementById('check-override').checked) {
+                systemPaid = parseFloat(document.getElementById('in-manual-paid').value) || 0;
+                payouts.push({ desc: "Manual Override Entry", amount: systemPaid });
+                document.getElementById('out-auto-note').textContent = "System payment amounts provided via manual override.";
+            } else {
+                document.getElementById('out-auto-note').textContent = "Automated Finacle calculation based on account remaining active up to closure/maturity.";
+                const quarterlyInterest = Math.round((principal * scssRate) / 400); // 7.4% / 4 * principal
+                const monthlyInterest = ((principal * scssRate) / 400) / 3;
+
+                let tempDate = new Date(startDate.valueOf());
+
+                while (true) {
+                    let nextQ = new Date(tempDate.valueOf());
+                    nextQ.setUTCMonth(nextQ.getUTCMonth() + 3);
+
+                    if (nextQ <= maturityDate) {
+                        if (nextQ <= closureDate) {
+                            systemPaid += quarterlyInterest;
+                            payouts.push({ desc: `Automated Full Quarter Payout (${formatDate(nextQ)})`, amount: quarterlyInterest });
+                            tempDate = new Date(nextQ.valueOf());
+                        } else {
+                            break; 
+                        }
+                    } else {
+                        // Broken Period (Finacle Logic)
+                        if (maturityDate <= closureDate) {
+                            let brokenAmount = 0;
+                            let iterDate = new Date(tempDate.valueOf());
+
+                            while (true) {
+                                let nextMonth = new Date(iterDate.valueOf());
+                                nextMonth.setUTCMonth(nextMonth.getUTCMonth() + 1);
+
+                                if (nextMonth <= maturityDate) {
+                                    brokenAmount += monthlyInterest;
+                                    iterDate = new Date(nextMonth.valueOf());
+                                } else {
+                                    let year = iterDate.getUTCFullYear();
+                                    let month = iterDate.getUTCMonth() + 1;
+                                    let daysInMonth = new Date(year, month, 0).getDate();
+                                    
+                                    let remainingDays = maturityDate.getUTCDate() - iterDate.getUTCDate();
+                                    
+                                    if(remainingDays > 0) {
+                                        brokenAmount += monthlyInterest * (remainingDays / daysInMonth);
+                                    }
+                                    break;
+                                }
+                            }
+                            let roundedBroken = Math.round(brokenAmount);
+                            if (roundedBroken > 0) {
+                                systemPaid += roundedBroken;
+                                payouts.push({ desc: `Final Broken-Period Interest at Maturity (${formatDate(maturityDate)})`, amount: roundedBroken });
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+
+            // --- 2. TRUE ENTITLEMENT CALCULATION (SBCO AUDITOR METHOD) ---
+            
+            // A. SCSS Earned (Start Date to Date of Death, inclusive)
+            const scssDays = dateDiffInDays(startDate, deathDate) + 1;
             const scssAmount = Math.round((principal * scssRate * scssDays) / 36500);
-            const posaAmount = Math.round((principal * posaRate * posaDays) / 36500);
+            
+            // B. POSA Earned (Day after Death to Day before POSA Cutoff)
+            // POSA stops accumulating on the HIARM ledger at the day before Maturity OR the day before Closure
+            let posaCutoffDate = (maturityDate < closureDate) ? maturityDate : closureDate;
+            let posaEndDate = addDaysToDate(posaCutoffDate, -1);
+            let posaStartDate = addDaysToDate(deathDate, 1);
+            
+            let posaDays = 0;
+            let posaAmount = 0;
+            
+            if (posaStartDate <= posaEndDate) {
+                posaDays = dateDiffInDays(posaStartDate, posaEndDate) + 1;
+                posaAmount = Math.round((principal * posaRate * posaDays) / 36500);
+                document.getElementById('row-posa').style.display = 'table-row';
+            } else {
+                document.getElementById('row-posa').style.display = 'none'; // No POSA period if closed immediately
+            }
+
             const totalEntitlement = scssAmount + posaAmount;
             const recoveryAmount = systemPaid - totalEntitlement;
 
-            // Populate Report Header
+            // --- 3. INJECT DATA INTO UI ---
             document.getElementById('out-name').textContent = name;
             document.getElementById('out-acc').textContent = acc;
             document.getElementById('out-principal').textContent = formatIN.format(principal);
-            document.getElementById('out-death-date').textContent = formatDate(deathDateStr);
-            document.getElementById('out-maturity-date').textContent = formatDate(maturityDateStr);
+            document.getElementById('out-death-date').textContent = formatDate(deathDate);
+            document.getElementById('out-maturity-date').textContent = formatDate(maturityDate);
+            document.getElementById('out-closure-date').textContent = formatDate(closureDate);
             
-            // Populate System Payments
-            if (pay1 > 0) {
-                document.getElementById('row-pay1').style.display = 'table-row';
-                document.getElementById('out-pay1').textContent = formatIN.format(pay1);
-            } else { document.getElementById('row-pay1').style.display = 'none'; }
-            
-            if (pay2 > 0) {
-                document.getElementById('row-pay2').style.display = 'table-row';
-                document.getElementById('out-pay2').textContent = formatIN.format(pay2);
-            } else { document.getElementById('row-pay2').style.display = 'none'; }
-            
-            if (pay3 > 0) {
-                document.getElementById('row-pay3').style.display = 'table-row';
-                document.getElementById('out-pay3').textContent = formatIN.format(pay3);
-            } else { document.getElementById('row-pay3').style.display = 'none'; }
+            // Inject dynamic payouts
+            const tbody = document.getElementById('payout-table-body');
+            tbody.innerHTML = '';
+            if (payouts.length === 0) {
+                tbody.innerHTML = `<tr><td>No automated payments triggered</td><td class="amount-col">₹0</td></tr>`;
+            } else {
+                payouts.forEach(p => {
+                    tbody.innerHTML += `<tr><td>${p.desc}</td><td class="amount-col">₹${formatIN.format(p.amount)}</td></tr>`;
+                });
+            }
 
             document.getElementById('out-system-paid').textContent = formatIN.format(systemPaid);
             document.getElementById('out-system-paid-2').textContent = formatIN.format(systemPaid);
             
-            // Populate Entitlements
-            document.getElementById('out-scss-period').textContent = `${formatDate(startDateStr)} to ${formatDate(deathDateStr)}`;
+            document.getElementById('out-scss-period').textContent = `${formatDate(startDate)} to ${formatDate(deathDate)}`;
             document.getElementById('out-scss-days').textContent = scssDays;
             document.getElementById('out-scss-amount').textContent = formatIN.format(scssAmount);
             
-            document.getElementById('out-posa-period').textContent = `${formatDate(posaStartStr)} to ${formatDate(posaEndStr)}`;
-            document.getElementById('out-posa-days').textContent = posaDays;
-            document.getElementById('out-posa-amount').textContent = formatIN.format(posaAmount);
+            if(posaDays > 0) {
+                document.getElementById('out-posa-period').textContent = `${formatDate(posaStartDate)} to ${formatDate(posaEndDate)}`;
+                document.getElementById('out-posa-days').textContent = posaDays;
+                document.getElementById('out-posa-amount').textContent = formatIN.format(posaAmount);
+            }
             
             document.getElementById('out-total-entitlement').textContent = formatIN.format(totalEntitlement);
             document.getElementById('out-total-entitlement-2').textContent = formatIN.format(totalEntitlement);
             
-            // Final Amount
             document.getElementById('out-recovery-amount').textContent = formatIN.format(recoveryAmount);
 
-            // Show Report and Download Button
+            // Reveal report
             document.getElementById('report-wrapper').style.display = 'block';
             document.getElementById('btn-download').style.display = 'block';
         }
@@ -449,11 +557,13 @@
             const reportNode = document.getElementById('report-container');
             
             html2canvas(reportNode, {
-                scale: 2, // Higher resolution
-                backgroundColor: "#ffffff"
+                scale: 2, 
+                backgroundColor: "#ffffff",
+                windowWidth: reportNode.scrollWidth,
+                windowHeight: reportNode.scrollHeight
             }).then(canvas => {
                 const link = document.createElement('a');
-                link.download = 'HIARM_Calculation_Report.png';
+                link.download = 'SCSS_HIARM_Calculation_Report.png';
                 link.href = canvas.toDataURL('image/png');
                 link.click();
             });
