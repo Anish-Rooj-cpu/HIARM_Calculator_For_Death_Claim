@@ -33,6 +33,7 @@
             border-radius: 8px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             margin-bottom: 20px;
+            box-sizing: border-box;
         }
 
         h2 {
@@ -43,6 +44,7 @@
             margin-top: 0;
             text-transform: uppercase;
             letter-spacing: 1px;
+            font-size: clamp(1.2rem, 4vw, 1.5rem);
         }
 
         .form-grid {
@@ -78,6 +80,8 @@
             border-radius: 4px;
             font-size: 1em;
             transition: border-color 0.3s;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         input:focus {
@@ -96,6 +100,7 @@
             width: 18px;
             height: 18px;
             cursor: pointer;
+            flex-shrink: 0;
         }
 
         button {
@@ -110,6 +115,7 @@
             font-weight: bold;
             margin-bottom: 10px;
             transition: background-color 0.3s;
+            box-sizing: border-box;
         }
 
         button:hover {
@@ -118,7 +124,7 @@
 
         .btn-small {
             width: auto;
-            padding: 6px 12px;
+            padding: 8px 15px;
             font-size: 0.9em;
             margin-bottom: 0;
             background-color: var(--secondary-color);
@@ -130,6 +136,7 @@
 
         .btn-remove {
             background-color: var(--alert-color);
+            flex-shrink: 0;
         }
 
         .btn-remove:hover {
@@ -145,11 +152,21 @@
             background-color: #056a65;
         }
 
+        .manual-entry-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+
         /* --- Report Section Styles --- */
         #report-wrapper {
             display: none;
             width: 100%;
             max-width: 850px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
 
         .report-container {
@@ -157,6 +174,8 @@
             padding: 40px;
             border: 1px solid #ccc;
             color: #000;
+            min-width: 700px; /* Ensures the document format doesn't crush on mobile */
+            box-sizing: border-box;
         }
 
         .report-header {
@@ -213,6 +232,7 @@
         .amount-col {
             text-align: right;
             font-weight: bold;
+            white-space: nowrap;
         }
 
         .calculation-note {
@@ -241,6 +261,45 @@
             border-top: 1px dashed #000;
             padding-top: 15px;
             color: #333;
+        }
+
+        /* --- Media Queries for Mobile Responsiveness --- */
+        @media screen and (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                padding: 20px;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .full-width {
+                grid-column: span 1;
+                padding: 10px;
+            }
+
+            .manual-entry-row {
+                flex-direction: column;
+                align-items: stretch;
+                border: 1px solid #ddd;
+                padding: 10px;
+                border-radius: 4px;
+                background-color: #fff;
+            }
+
+            .btn-small {
+                width: 100%;
+                text-align: center;
+            }
+            
+            #report-wrapper {
+                border-radius: 8px;
+            }
         }
     </style>
 </head>
@@ -282,11 +341,10 @@
                     <label style="margin: 0; color: var(--alert-color);">Manual Override (Skip Auto-Calculation for System Paid Amount)</label>
                 </div>
                 
-                <!-- Updated Manual Input Section -->
                 <div id="manual-paid-container" style="display: none; margin-top: 10px; background: white; padding: 15px; border: 1px solid var(--border-color); border-radius: 6px;">
                     <label style="margin-bottom: 10px; display: block;">Manually Enter Excess Finacle Payments (Date & Amount)</label>
                     <div id="manual-entries-list">
-                        <div class="manual-entry-row" style="display: flex; gap: 10px; margin-bottom: 10px;">
+                        <div class="manual-entry-row">
                             <input type="date" class="manual-date" style="flex: 1;">
                             <input type="number" class="manual-amount" placeholder="Amount (₹)" style="flex: 1;">
                         </div>
@@ -409,7 +467,6 @@
             return date.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-');
         }
 
-        // Helper to format raw YYYY-MM-DD strings seamlessly
         function formatManualDateStr(dateStr) {
             if (!dateStr) return 'Date Not Provided';
             const parts = dateStr.split('-');
@@ -417,7 +474,6 @@
             return dateStr;
         }
 
-        // Exact JS Date manipulation avoiding timezone shifts
         function addDaysToDate(dateObj, days) {
             let result = new Date(dateObj.valueOf());
             result.setUTCDate(result.getUTCDate() + days);
@@ -439,7 +495,6 @@
             const container = document.getElementById('manual-entries-list');
             const row = document.createElement('div');
             row.className = 'manual-entry-row';
-            row.style.cssText = 'display: flex; gap: 10px; margin-bottom: 10px;';
             row.innerHTML = `
                 <input type="date" class="manual-date" style="flex: 1;">
                 <input type="number" class="manual-amount" placeholder="Amount (₹)" style="flex: 1;">
@@ -455,7 +510,6 @@
             const scssRate = parseFloat(document.getElementById('in-scss-rate').value);
             const posaRate = parseFloat(document.getElementById('in-posa-rate').value);
             
-            // Treat dates as UTC to avoid local timezone midnight bugs
             const openStr = document.getElementById('in-open-date').value;
             const deathStr = document.getElementById('in-death-date').value;
             const closureStr = document.getElementById('in-closure-date').value;
@@ -464,17 +518,15 @@
             const deathDate = new Date(deathStr + 'T00:00:00Z');
             const closureDate = new Date(closureStr + 'T00:00:00Z');
             
-            // 1. Calculate Maturity Date (Exactly 5 years from Account Opening)
             const maturityDate = new Date(openDate.valueOf());
             maturityDate.setUTCFullYear(maturityDate.getUTCFullYear() + 5);
 
-            // 2. Automate "Start Date of Final Clean Quarter"
             const deathMonth = deathDate.getUTCMonth(); 
             let startMonth = 0;
-            if (deathMonth >= 0 && deathMonth <= 2) startMonth = 0; // Jan
-            else if (deathMonth >= 3 && deathMonth <= 5) startMonth = 3; // Apr
-            else if (deathMonth >= 6 && deathMonth <= 8) startMonth = 6; // Jul
-            else if (deathMonth >= 9 && deathMonth <= 11) startMonth = 9; // Oct
+            if (deathMonth >= 0 && deathMonth <= 2) startMonth = 0; 
+            else if (deathMonth >= 3 && deathMonth <= 5) startMonth = 3; 
+            else if (deathMonth >= 6 && deathMonth <= 8) startMonth = 6; 
+            else if (deathMonth >= 9 && deathMonth <= 11) startMonth = 9; 
             
             let startDate = new Date(Date.UTC(deathDate.getUTCFullYear(), startMonth, 1));
             
@@ -485,11 +537,9 @@
             let systemPaid = 0;
             let payouts = [];
 
-            // --- 3. SYSTEM OVERPAYMENT CALCULATION ---
             if (document.getElementById('check-override').checked) {
                 document.getElementById('out-auto-note').textContent = "System payment amounts provided via manual override.";
                 
-                // Grab all dynamic manual entries
                 const entryRows = document.querySelectorAll('.manual-entry-row');
                 entryRows.forEach(row => {
                     const dateVal = row.querySelector('.manual-date').value;
@@ -501,7 +551,6 @@
                     }
                 });
 
-                // Fallback if checked but empty
                 if (payouts.length === 0) {
                     payouts.push({ desc: "No manual payments entered", amount: 0 });
                 }
@@ -526,7 +575,6 @@
                             break; 
                         }
                     } else {
-                        // Broken Period (Finacle Logic)
                         if (maturityDate <= closureDate) {
                             let brokenAmount = 0;
                             let iterDate = new Date(tempDate.valueOf());
@@ -561,8 +609,6 @@
                     }
                 }
             }
-
-            // --- 4. TRUE ENTITLEMENT CALCULATION (SBCO AUDITOR METHOD) ---
             
             const scssDays = dateDiffInDays(startDate, deathDate) + 1;
             const scssAmount = Math.round((principal * scssRate * scssDays) / 36500);
@@ -585,7 +631,6 @@
             const totalEntitlement = scssAmount + posaAmount;
             const recoveryAmount = systemPaid - totalEntitlement;
 
-            // --- 5. INJECT DATA INTO UI ---
             document.getElementById('out-name').textContent = name;
             document.getElementById('out-acc').textContent = acc;
             document.getElementById('out-principal').textContent = formatIN.format(principal);
@@ -593,7 +638,6 @@
             document.getElementById('out-maturity-date').textContent = formatDate(maturityDate);
             document.getElementById('out-closure-date').textContent = formatDate(closureDate);
             
-            // Inject dynamic payouts
             const tbody = document.getElementById('payout-table-body');
             tbody.innerHTML = '';
             if (payouts.length === 0) {
@@ -622,7 +666,6 @@
             
             document.getElementById('out-recovery-amount').textContent = formatIN.format(recoveryAmount);
 
-            // Reveal report
             document.getElementById('report-wrapper').style.display = 'block';
             document.getElementById('btn-download').style.display = 'block';
         }
