@@ -164,8 +164,6 @@
             display: none;
             width: 100%;
             max-width: 850px;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
 
@@ -174,7 +172,7 @@
             padding: 40px;
             border: 1px solid #ccc;
             color: #000;
-            min-width: 700px; /* Ensures the document format doesn't crush on mobile */
+            width: 100%; /* Fully responsive width */
             box-sizing: border-box;
         }
 
@@ -223,6 +221,7 @@
             border: 1px solid #000;
             padding: 10px 12px;
             text-align: left;
+            word-break: break-word; /* Prevents overflow */
         }
 
         th {
@@ -299,6 +298,31 @@
             
             #report-wrapper {
                 border-radius: 8px;
+            }
+
+            /* Responsive Report Adjustments */
+            .report-container {
+                padding: 15px;
+            }
+
+            .report-header h3 {
+                font-size: 1.2em;
+            }
+
+            .report-meta {
+                flex-direction: column;
+                gap: 5px;
+                font-size: 0.9em;
+                text-align: center;
+            }
+
+            th, td {
+                padding: 6px;
+                font-size: 0.85em;
+            }
+
+            .final-row, .recovery-row {
+                font-size: 1em;
             }
         }
     </style>
@@ -673,12 +697,25 @@
         function downloadImage() {
             const reportNode = document.getElementById('report-container');
             
+            // MAGIC TRICK: Temporarily force the container to desktop width for a perfect screenshot
+            const originalWidth = reportNode.style.width;
+            const originalMaxWidth = reportNode.style.maxWidth;
+            const originalPadding = reportNode.style.padding;
+            
+            reportNode.style.width = '850px';
+            reportNode.style.maxWidth = 'none';
+            reportNode.style.padding = '40px'; 
+
             html2canvas(reportNode, {
                 scale: 2, 
                 backgroundColor: "#ffffff",
-                windowWidth: reportNode.scrollWidth,
-                windowHeight: reportNode.scrollHeight
+                windowWidth: 850
             }).then(canvas => {
+                // Restore mobile CSS instantly after the picture is taken
+                reportNode.style.width = originalWidth;
+                reportNode.style.maxWidth = originalMaxWidth;
+                reportNode.style.padding = originalPadding;
+                
                 const link = document.createElement('a');
                 link.download = 'HIARM_Recovery_Calculation.png';
                 link.href = canvas.toDataURL('image/png');
