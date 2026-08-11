@@ -177,38 +177,52 @@
             box-sizing: border-box;
         }
 
-        .report-logos {
+        /* FLEX HEADER FOR LOGOS AND TITLE */
+        .report-title-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
         }
 
-        .report-logos img {
+        .report-title-row img {
             height: 65px;
+            width: auto;
             object-fit: contain;
         }
 
-        .report-header {
-            text-align: center;
-            margin-bottom: 25px;
-        }
-
-        .report-header h3 {
+        .report-title-row h3 {
             margin: 0;
-            font-size: 1.5em;
+            font-size: 1.4em;
             text-transform: uppercase;
-            border-bottom: 2px solid #000;
-            padding-bottom: 12px;
             color: #000;
+            text-align: center;
+            flex: 1;
+            padding: 0 15px;
         }
 
+        /* SYMMETRICAL GRID FOR REPORT META INFO */
         .report-meta {
-            display: flex;
-            justify-content: space-between;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
             margin-top: 15px;
             font-size: 1em;
             font-weight: bold;
+            width: 100%;
+        }
+
+        .report-meta > span:nth-child(1) {
+            text-align: left;
+        }
+
+        .report-meta > span:nth-child(2) {
+            text-align: center;
+        }
+
+        .report-meta > span:nth-child(3) {
+            text-align: right;
         }
 
         .report-section {
@@ -324,19 +338,29 @@
                 padding: 15px;
             }
 
-            .report-logos img {
-                height: 45px;
+            .report-title-row {
+                padding-bottom: 10px;
             }
 
-            .report-header h3 {
-                font-size: 1.2em;
+            .report-title-row img {
+                height: 40px;
             }
 
+            .report-title-row h3 {
+                font-size: 1.1em;
+                padding: 0 5px;
+            }
+
+            /* Stack meta info centrally on small screens */
             .report-meta {
+                display: flex;
                 flex-direction: column;
                 gap: 5px;
                 font-size: 0.9em;
-                text-align: center;
+            }
+
+            .report-meta > span {
+                text-align: center !important;
             }
 
             th, td {
@@ -361,8 +385,8 @@
                 <input type="text" id="in-name" value="SATYABAN BANERJEE">
             </div>
             <div class="form-group">
-                <label>Account Number (Last 4)</label>
-                <input type="text" id="in-acc" value="7941">
+                <label>Full Account Number</label>
+                <input type="text" id="in-acc" value="020011747941">
             </div>
             <div class="form-group">
                 <label>Principal Amount (₹)</label>
@@ -421,24 +445,23 @@
 
     <div id="report-wrapper">
         <div id="report-container" class="report-container">
-            <!-- Logos Container -->
-            <div class="report-logos">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/India_Post_Logo.svg/512px-India_Post_Logo.svg.png" alt="India Post Logo">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Emblem_of_India.svg/250px-Emblem_of_India.svg.png" alt="Govt of India Logo">
+            
+            <!-- FIXED REPORT HEADER WITH LOGOS -->
+            <div class="report-title-row">
+                <img src="https://upload.wikimedia.org/wikipedia/en/3/32/India_Post.svg?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=original" alt="India Post Logo">
+                <h3>HIARM RECOVERY CALCULATION - SCSS ACCOUNT</h3>
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Emblem_of_India.svg/250px-Emblem_of_India.svg.png" alt="Govt of India Logo" crossorigin="anonymous">
             </div>
 
-            <div class="report-header">
-                <h3>HIARM RECOVERY CALCULATION - SCSS ACCOUNT</h3>
-                <div class="report-meta">
-                    <span>Depositor: <span id="out-name"></span></span>
-                    <span>Account No: ***<span id="out-acc"></span></span>
-                    <span>Principal: ₹<span id="out-principal"></span></span>
-                </div>
-                <div class="report-meta" style="margin-top: 8px;">
-                    <span>Death Date: <span id="out-death-date"></span></span>
-                    <span>Maturity Date: <span id="out-maturity-date"></span></span>
-                    <span>Closure Date: <span id="out-closure-date"></span></span>
-                </div>
+            <div class="report-meta">
+                <span>Depositor: <span id="out-name"></span></span>
+                <span>Account No: <span id="out-acc"></span></span>
+                <span>Principal: ₹<span id="out-principal"></span></span>
+            </div>
+            <div class="report-meta" style="margin-top: 8px;">
+                <span>Death Date: <span id="out-death-date"></span></span>
+                <span>Maturity Date: <span id="out-maturity-date"></span></span>
+                <span>Closure Date: <span id="out-closure-date"></span></span>
             </div>
 
             <div class="report-section">
@@ -506,7 +529,6 @@
                 </table>
             </div>
 
-            <!-- New Section for Net Final Settlement -->
             <div class="report-section">
                 <h4>4. NET FINAL SETTLEMENT AMOUNT</h4>
                 <div class="calculation-note">The net final payout amount adjusted for the excess interest already credited.</div>
@@ -708,7 +730,6 @@
             const totalEntitlement = scssAmount + posaAmount;
             const recoveryAmount = systemPaid - totalEntitlement;
             
-            // Calculate final net settlement amount
             const finalSettlement = principal + totalEntitlement - systemPaid;
 
             document.getElementById('out-name').textContent = name;
@@ -746,7 +767,6 @@
             
             document.getElementById('out-recovery-amount').textContent = formatIN.format(recoveryAmount);
 
-            // Populate Final Settlement Section
             document.getElementById('out-final-principal').textContent = formatIN.format(principal);
             document.getElementById('out-final-entitlement').textContent = formatIN.format(totalEntitlement);
             document.getElementById('out-final-system-paid').textContent = formatIN.format(systemPaid);
@@ -771,7 +791,7 @@
                 scale: 2, 
                 backgroundColor: "#ffffff",
                 windowWidth: 850,
-                useCORS: true // Added to ensure cross-origin logos render correctly in the download
+                useCORS: true 
             }).then(canvas => {
                 reportNode.style.width = originalWidth;
                 reportNode.style.maxWidth = originalMaxWidth;
