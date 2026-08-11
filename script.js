@@ -290,82 +290,23 @@ function downloadImage() {
 function downloadPDF() {
     const btn = document.getElementById('btn-download-pdf');
     const originalText = btn.innerHTML;
-    btn.innerHTML = '⏳ Generating PDF...';
+    btn.innerHTML = '🖨️ Preparing...';
     btn.disabled = true;
 
     setTimeout(() => {
-        const reportNode = document.getElementById('report-container');
+        const nameInput = document.getElementById('in-name').value.trim();
+        const safeName = nameInput ? nameInput.replace(/[^a-zA-Z0-9]/g, '_') : 'Account_Holder';
         
-        const originalBodyWidth = document.body.style.width;
-        document.body.style.width = '1000px';
-
-        const originalWidth = reportNode.style.width;
-        const originalMaxWidth = reportNode.style.maxWidth;
-        const originalPadding = reportNode.style.padding;
+        // Temporarily change document title so "Save as PDF" uses this filename
+        const originalTitle = document.title;
+        document.title = `HIARM_${safeName}`;
         
-        reportNode.style.width = '1000px';
-        reportNode.style.maxWidth = 'none';
-        reportNode.style.padding = '40px'; 
+        // Trigger native browser print dialog (which supports Save as PDF with zero margins perfectly)
+        window.print();
         
-        // Check if report is likely to exceed 1 A4 page
-        // A4 ratio is ~1.414. For 1000px width, 1 page height is ~1414px.
-        const needsCompact = reportNode.scrollHeight > 1350;
-
-        html2canvas(reportNode, {
-            scale: 2, 
-            backgroundColor: "#ffffff",
-            windowWidth: 1000,
-            scrollY: 0,
-            useCORS: true,
-            onclone: function(clonedDoc) {
-                if (needsCompact) {
-                    const clonedReport = clonedDoc.getElementById('report-container');
-                    clonedReport.classList.add('compact-pdf');
-                }
-            }
-        }).then(canvas => {
-            document.body.style.width = originalBodyWidth;
-            reportNode.style.width = originalWidth;
-            reportNode.style.maxWidth = originalMaxWidth;
-            reportNode.style.padding = originalPadding;
-            
-            // Compress the image data as JPEG with 80% quality to significantly reduce PDF size
-            const imgData = canvas.toDataURL('image/jpeg', 0.8);
-            const { jsPDF } = window.jspdf;
-            
-            // Use standard A4 physical dimensions for the PDF page.
-            // This ensures perfect compatibility with standard printers without causing letterboxing (side margins).
-            const pdf = new jsPDF('p', 'pt', 'a4');
-            const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pageHeight = pdf.internal.pageSize.getHeight();
-            
-            let imgWidth = pdfWidth;
-            let imgHeight = (canvas.height * pdfWidth) / canvas.width;
-            
-            // Force fit it into 1 page proportionally if it exceeds A4 height
-            if (imgHeight > pageHeight) {
-                const ratio = pageHeight / imgHeight;
-                imgHeight = pageHeight;
-                imgWidth = imgWidth * ratio;
-            }
-            
-            // Center horizontally (only applies if it was scaled down due to height)
-            const xOffset = (pdfWidth - imgWidth) / 2;
-            
-            pdf.addImage(imgData, 'JPEG', xOffset, 0, imgWidth, imgHeight);
-            
-            const nameInput = document.getElementById('in-name').value.trim();
-            const safeName = nameInput ? nameInput.replace(/[^a-zA-Z0-9]/g, '_') : 'Account_Holder';
-            const fileName = `HIARM_${safeName}.pdf`;
-            
-            pdf.save(fileName);
-            
-            btn.innerHTML = originalText;
-            btn.disabled = false;
-        }).catch(err => {
-            console.error(err);
-            btn.innerHTML = originalText;
-            btn.disabled = false;
-        });
-    }, 50);
+        // Restore title and button
+        document.title = originalTitle;
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }, 100);
 }

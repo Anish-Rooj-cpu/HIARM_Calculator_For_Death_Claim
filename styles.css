@@ -362,4 +362,54 @@ th {
     .report-meta > span { text-align: center !important; }
     th, td { padding: 6px; font-size: 0.85em; }
     .final-row, .recovery-row, .settlement-row { font-size: 1em; }
+    
+    /* Ensure tables don't break layout on small screens */
+    .report-section { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+}
+
+/* --- Print Styles --- */
+@media print {
+    @page {
+        size: A4 portrait;
+        margin: 12mm;
+    }
+    body {
+        margin: 0;
+        padding: 0;
+        background-color: #fff;
+    }
+    .container, #action-buttons, .calculation-note {
+        display: none !important;
+    }
+    #report-wrapper {
+        display: block !important;
+        width: 100% !important;
+        max-width: none !important;
+        box-shadow: none !important;
+        border: none !important;
+        margin: 0 !important;
+    }
+    .report-container {
+        padding: 0 !important;
+        border: none !important;
+        width: 100% !important;
+        max-width: none !important;
+    }
+    .report-title-row img {
+        height: 60px !important;
+    }
+    .signature-section {
+        page-break-inside: avoid;
+    }
+    table {
+        page-break-inside: auto;
+    }
+    tr {
+        page-break-inside: avoid;
+        page-break-after: auto;
+    }
+    th, td {
+        padding: 8px !important;
+        font-size: 11pt !important;
+    }
 }
