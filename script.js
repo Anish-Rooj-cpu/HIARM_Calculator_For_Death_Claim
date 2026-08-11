@@ -301,16 +301,19 @@ function downloadPDF() {
         const origWidth = reportNode.style.width;
         const origMaxWidth = reportNode.style.maxWidth;
         const origPadding = reportNode.style.padding;
+        const origFontSize = reportNode.style.fontSize;
 
-        // Force a fixed desktop width so mobile doesn't clip anything
-        const captureWidth = 900;
+        // Use a wide capture width so that the content height stays 
+        // within A4 proportions (1:1.414) without needing to shrink
+        const captureWidth = 1100;
         document.body.style.width = captureWidth + 'px';
         reportNode.style.width = captureWidth + 'px';
         reportNode.style.maxWidth = 'none';
-        reportNode.style.padding = '30px';
+        reportNode.style.padding = '45px 50px';
+        reportNode.style.fontSize = '15px';
 
         html2canvas(reportNode, {
-            scale: 2,
+            scale: 3,              // High resolution for crisp text
             backgroundColor: '#ffffff',
             windowWidth: captureWidth,
             scrollY: 0,
@@ -321,32 +324,40 @@ function downloadPDF() {
             reportNode.style.width = origWidth;
             reportNode.style.maxWidth = origMaxWidth;
             reportNode.style.padding = origPadding;
+            reportNode.style.fontSize = origFontSize;
 
             const { jsPDF } = window.jspdf;
 
-            // A4 dimensions in mm: 210 x 297
+            // A4 in mm
             const pdf = new jsPDF('p', 'mm', 'a4');
             const pageW = 210;
             const pageH = 297;
 
-            // Zero margins — fill the entire page
+            // Professional document margins (like a real government letter)
+            const marginX = 12;
+            const marginY = 10;
+            const usableW = pageW - marginX * 2;
+            const usableH = pageH - marginY * 2;
+
             const canvasAspect = canvas.height / canvas.width;
-            let imgW = pageW;
+            let imgW = usableW;
             let imgH = imgW * canvasAspect;
 
-            // If it's taller than one page, scale down to fit
-            if (imgH > pageH) {
-                imgH = pageH;
+            // Scale down only if needed to fit one page
+            if (imgH > usableH) {
+                imgH = usableH;
                 imgW = imgH / canvasAspect;
             }
 
-            // Center horizontally if scaled down due to height
-            const xOffset = (pageW - imgW) / 2;
+            // Center the content
+            const xOffset = marginX + (usableW - imgW) / 2;
+            const yOffset = marginY;
 
-            const imgData = canvas.toDataURL('image/jpeg', 0.8);
-            pdf.addImage(imgData, 'JPEG', xOffset, 0, imgW, imgH);
+            // High quality JPEG for crisp text without huge file size
+            const imgData = canvas.toDataURL('image/jpeg', 0.92);
+            pdf.addImage(imgData, 'JPEG', xOffset, yOffset, imgW, imgH);
 
-            // Generate filename from depositor name
+            // Generate filename
             const nameInput = document.getElementById('in-name').value.trim();
             const safeName = nameInput ? nameInput.replace(/[^a-zA-Z0-9]/g, '_') : 'Account_Holder';
             pdf.save(`HIARM_${safeName}.pdf`);
@@ -359,6 +370,7 @@ function downloadPDF() {
             reportNode.style.width = origWidth;
             reportNode.style.maxWidth = origMaxWidth;
             reportNode.style.padding = origPadding;
+            reportNode.style.fontSize = origFontSize;
             btn.innerHTML = originalText;
             btn.disabled = false;
         });
