@@ -282,7 +282,8 @@ th, td {
     border: 1px solid #000;
     padding: 10px 12px;
     text-align: left;
-    word-break: break-word; 
+    word-break: normal;
+    overflow-wrap: break-word;
 }
 
 th {
@@ -450,4 +451,36 @@ th {
         padding-top: 10px !important;
         font-size: 9.5pt !important;
     }
+}
+
+/* --- Navigation Styles --- */
+.top-nav {
+    width: 100%;
+    max-width: 850px;
+    background-color: var(--primary-color);
+    border-radius: 8px;
+    margin-bottom: 20px;
+    display: flex;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.top-nav a {
+    flex: 1;
+    text-align: center;
+    padding: 15px;
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+    text-transform: uppercase;
+    transition: background-color 0.3s;
+}
+
+.top-nav a:hover {
+    background-color: var(--secondary-color);
+}
+
+.top-nav a.active {
+    background-color: var(--alert-color);
+    pointer-events: none;
 }

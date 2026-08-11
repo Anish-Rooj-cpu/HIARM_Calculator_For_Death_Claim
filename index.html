@@ -3,226 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HIARM RECOVERY CALCULATION - SCSS ACCOUNT</title>
-    <!-- Include html2canvas and jsPDF for image/pdf generation -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <title>Post Office Calculators Dashboard</title>
     <link rel="stylesheet" href="styles.css?v=6">
+    <style>
+        .dashboard-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            align-items: center;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .calc-card {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            text-align: center;
+            width: 100%;
+            max-width: 500px;
+            text-decoration: none;
+            color: #333;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 2px solid transparent;
+            box-sizing: border-box;
+        }
+        .calc-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+            border-color: var(--primary-color);
+        }
+        .calc-card h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+            text-transform: uppercase;
+        }
+        .calc-card p {
+            color: #666;
+            margin-bottom: 0;
+            line-height: 1.4;
+        }
+    </style>
 </head>
 <body>
-
-    <div class="container">
-        <h2>SCSS HIARM Calculator</h2>
-        
-        <div class="form-grid">
-            <div class="form-group">
-                <label>Depositor Name</label>
-                <input type="text" id="in-name" placeholder="e.g. AMAL PAL">
-            </div>
-            <div class="form-group">
-                <label>Full Account Number</label>
-                <input type="text" id="in-acc" placeholder="e.g. 012345678912">
-            </div>
-            <div class="form-group">
-                <label>Principal Amount (₹)</label>
-                <input type="number" id="in-principal" placeholder="e.g. 300000">
-            </div>
-            <div class="form-group">
-                <label>Account Opening Date</label>
-                <input type="date" id="in-open-date">
-            </div>
-            
-            <div class="form-group">
-                <label>Date of Death</label>
-                <input type="date" id="in-death-date">
-            </div>
-            <div class="form-group">
-                <label>Date of Claim Closure (In System)</label>
-                <input type="date" id="in-closure-date">
-            </div>
-
-            <div class="form-group full-width">
-                <div class="checkbox-group">
-                    <input type="checkbox" id="check-override" onchange="toggleManualOverride()">
-                    <label style="margin: 0; color: var(--alert-color);">Manual Override (Skip Auto-Calculation for System Paid Amount)</label>
-                </div>
-                
-                <div id="manual-paid-container" style="display: none; margin-top: 10px; background: white; padding: 15px; border: 1px solid var(--border-color); border-radius: 6px;">
-                    <label style="margin-bottom: 10px; display: block;">Manually Enter Excess Payments (Date & Amount)</label>
-                    <div id="manual-entries-list">
-                        <div class="manual-entry-row">
-                            <input type="date" class="manual-date" style="flex: 1;">
-                            <input type="number" class="manual-amount" placeholder="Amount (₹)" style="flex: 1;">
-                        </div>
-                    </div>
-                    <button type="button" class="btn-small" onclick="addManualEntry()">+ Add Another Payment</button>
-                </div>
-
-                <div id="auto-note" style="font-size: 0.9em; color: #555; margin-top: 5px;">
-                    <em>The system will automatically calculate the final quarter's start date, full quarters paid, and the maturity broken-period.</em>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label>SCSS Interest Rate (%)</label>
-                <input type="number" step="0.1" id="in-scss-rate" value="7.4">
-            </div>
-            <div class="form-group">
-                <label>POSA Interest Rate (%)</label>
-                <input type="number" step="0.1" id="in-posa-rate" value="4.0">
-            </div>
+    <div class="container" style="text-align: center; margin-top: 30px; background: transparent; box-shadow: none;">
+        <div style="display: flex; justify-content: center; margin-bottom: 20px;">
+            <img src="https://upload.wikimedia.org/wikipedia/en/3/32/India_Post.svg?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=original" alt="India Post Logo" style="height: 80px;">
         </div>
-
-        <button onclick="calculateHIARM()">Generate Report</button>
+        <h1 style="color: var(--primary-color); margin-bottom: 5px; text-transform: uppercase;">Post Office Tools</h1>
+        <p style="color: #555;">Select a calculator to get started</p>
     </div>
 
-    <div id="action-buttons">
-        <button id="btn-download" onclick="downloadImage()">🖼️ Download as Image</button>
-        <button id="btn-download-pdf" onclick="downloadPDF()">📄 Download as PDF</button>
+    <div class="dashboard-container">
+        <a href="pages/HIARM/index.html" class="calc-card">
+            <h3>SCSS HIARM Calculator</h3>
+            <p>Calculate system recovery and admissible interest for closed SCSS accounts due to death.</p>
+        </a>
+        <a href="pages/PLI/index.html" class="calc-card">
+            <h3>PLI Calculator</h3>
+            <p>Generate Endowment Assurance (Santosh) premium options and maturity estimates.</p>
+        </a>
     </div>
-
-    <div id="report-wrapper">
-        <div id="report-container" class="report-container">
-            
-            <div class="report-title-row">
-                <img src="https://upload.wikimedia.org/wikipedia/en/3/32/India_Post.svg?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=original" alt="India Post Logo">
-                <h3>HIARM RECOVERY CALCULATION - SCSS ACCOUNT</h3>
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Emblem_of_India.svg/250px-Emblem_of_India.svg.png" alt="Govt of India Logo" crossorigin="anonymous">
-            </div>
-
-            <div class="report-meta">
-                <span>Depositor: <span id="out-name"></span></span>
-                <span>Account No: <span id="out-acc"></span></span>
-                <span>Principal: ₹<span id="out-principal"></span></span>
-            </div>
-            <div class="report-meta" style="margin-top: 8px;">
-                <span>Death Date: <span id="out-death-date"></span></span>
-                <span>Maturity Date: <span id="out-maturity-date"></span></span>
-                <span>Closure Date: <span id="out-closure-date"></span></span>
-            </div>
-            <div class="report-meta" style="margin-top: 8px;">
-                <span>SCSS Rate: <span id="out-scss-rate-disp"></span>%</span>
-                <span>POSA Rate: <span id="out-posa-rate-disp"></span>%</span>
-                <span></span> <!-- Empty span for grid alignment -->
-            </div>
-
-            <div class="basis-box">
-                <strong>Calculation Basis:</strong>
-                <ul>
-                    <li>SCSS interest up to date of death.</li>
-                    <li>POSA interest from the day after death up to maturity/closure, as applicable.</li>
-                    <li>Post-Maturity Interest calculated separately where applicable.</li>
-                    <li>Amounts rounded to nearest rupee.</li>
-                </ul>
-            </div>
-
-            <div class="report-section">
-                <h4>1. INTEREST CREDITED BY SYSTEM</h4>
-                <div class="calculation-note" id="out-auto-note">Interest credited by system based on account remaining active.</div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Description</th>
-                            <th class="amount-col">Amount Credited</th>
-                        </tr>
-                    </thead>
-                    <tbody id="payout-table-body">
-                    </tbody>
-                    <tr class="final-row">
-                        <td><strong>TOTAL INTEREST CREDITED</strong></td>
-                        <td class="amount-col"><strong>₹<span id="out-system-paid"></span></strong></td>
-                    </tr>
-                </table>
-            </div>
-
-            <div class="report-section">
-                <h4>2. INTEREST ADMISSIBLE AS PER CALCULATION</h4>
-                <div class="calculation-note">Interest calculated on a day-wise basis for the SCSS period and eligible POSA period.</div>
-                <table>
-                    <tr>
-                        <th>Component</th>
-                        <th>Period & Days</th>
-                        <th class="amount-col">Approved Amount</th>
-                    </tr>
-                    <tr>
-                        <td><strong>A. SCSS Earned (While Alive)</strong></td>
-                        <td><span id="out-scss-period"></span> (<span id="out-scss-days"></span> Days)</td>
-                        <td class="amount-col">₹<span id="out-scss-amount"></span></td>
-                    </tr>
-                    <tr id="row-posa">
-                        <td><strong>B. POSA Earned (Post-Death)</strong></td>
-                        <td><span id="out-posa-period"></span> (<span id="out-posa-days"></span> Days)</td>
-                        <td class="amount-col">₹<span id="out-posa-amount"></span></td>
-                    </tr>
-                    <tr class="final-row">
-                        <td colspan="2"><strong>TOTAL VALID ENTITLEMENT</strong></td>
-                        <td class="amount-col"><strong>₹<span id="out-total-entitlement"></span></strong></td>
-                    </tr>
-                </table>
-            </div>
-
-            <div class="report-section">
-                <h4>3. EXCESS INTEREST IDENTIFIED FOR RECOVERY</h4>
-                <div class="calculation-note">The calculated difference between interest credited and interest admissible.</div>
-                <table>
-                    <tr>
-                        <td>Total Interest Credited</td>
-                        <td class="amount-col">₹<span id="out-system-paid-2"></span></td>
-                    </tr>
-                    <tr>
-                        <td>Less: Interest Admissible</td>
-                        <td class="amount-col">- ₹<span id="out-total-entitlement-2"></span></td>
-                    </tr>
-                    <tr class="recovery-row">
-                        <td><strong>NET EXCESS PAYMENT</strong></td>
-                        <td class="amount-col"><strong>₹<span id="out-recovery-amount"></span></strong></td>
-                    </tr>
-                </table>
-            </div>
-
-            <div class="report-section">
-                <h4>4. FINAL AMOUNT PAYABLE</h4>
-                <div class="calculation-note">The net final payout amount adjusted for the interest already credited and applicable Post-Maturity Interest.</div>
-                <table>
-                    <tr>
-                        <td>Principal Amount</td>
-                        <td class="amount-col">₹<span id="out-final-principal"></span></td>
-                    </tr>
-                    <tr>
-                        <td>Interest Admissible</td>
-                        <td class="amount-col">₹<span id="out-final-entitlement"></span></td>
-                    </tr>
-                    <tr>
-                        <td>Less: Interest Already Credited</td>
-                        <td class="amount-col">- ₹<span id="out-final-system-paid"></span></td>
-                    </tr>
-                    <tr style="background-color: #f1f2f6;">
-                        <td><strong>Net Interest Adjustment</strong></td>
-                        <td class="amount-col"><strong><span id="out-net-interest-adj"></span></strong></td>
-                    </tr>
-                    <tr id="row-pmi" style="display:none;">
-                        <td>Add: Post-Maturity Interest [<span id="out-pmi-period"></span>]</td>
-                        <td class="amount-col">+ ₹<span id="out-pmi-amount"></span></td>
-                    </tr>
-                    <tr class="settlement-row">
-                        <td><strong>FINAL AMOUNT PAYABLE</strong></td>
-                        <td class="amount-col"><strong>₹<span id="out-final-settlement"></span></strong></td>
-                    </tr>
-                </table>
-            </div>
-            
-            <div class="footer-note">
-                <strong>Note:</strong> The excess interest amount shown above may be recovered through the prescribed accounting procedure after verification of records.
-            </div>
-            
-            <div class="signature-section" style="margin-top: 60px;">
-                <div class="signature-box">
-                    <span>Signature of SPM</span>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script src="script.js"></script>
 </body>
 </html>

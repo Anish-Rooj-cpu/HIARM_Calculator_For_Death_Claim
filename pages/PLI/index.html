@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PLI Calculator - Endowment Assurance (Santosh)</title>
+    <!-- Include html2canvas and jsPDF for image/pdf generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link rel="stylesheet" href="../../styles.css?v=6">
+</head>
+<body>
+
+    <div style="width: 100%; max-width: 850px; margin-bottom: 20px;">
+        <a href="../../index.html" style="display: inline-block; padding: 10px 20px; background-color: var(--secondary-color); color: white; text-decoration: none; border-radius: 6px; font-weight: bold; transition: background-color 0.3s;">⬅ Back to Home</a>
+    </div>
+
+    <div class="container">
+
+        <h2>PLI Endowment Assurance (Santosh)</h2>
+        <div class="calculation-note" style="text-align: center; margin-bottom: 20px;">
+            Calculate premium and maturity values for Postal Life Insurance Endowment Assurance.
+        </div>
+        
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Proposant Name (Optional)</label>
+                <input type="text" id="pli-name" placeholder="e.g. AMAL PAL">
+            </div>
+            <div class="form-group">
+                <label>Age or Date of Birth</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="number" id="pli-age" placeholder="Age (e.g. 25)" min="19" max="55" style="flex: 1;" title="Enter Current Age">
+                    <input type="date" id="pli-dob" onchange="calculateAgeFromDOB()" style="flex: 1;" title="Or pick Date of Birth">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Sum Assured (₹)</label>
+                <input type="number" id="pli-sa" placeholder="e.g. 500000" min="20000" max="5000000" step="10000">
+            </div>
+            <div class="form-group">
+                <label>Payment Frequency</label>
+                <select id="pli-frequency" style="padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 1em; width: 100%; box-sizing: border-box;">
+                    <option value="Monthly">Monthly</option>
+                    <option value="Half-Yearly">Half-Yearly</option>
+                    <option value="Yearly">Yearly</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Bonus Rate (₹ per 1000 per year)</label>
+                <input type="number" id="pli-bonus-rate" value="52" title="Current EA Bonus Rate is ₹52">
+            </div>
+        </div>
+
+        <button onclick="calculatePLI()">Generate Premium Options</button>
+    </div>
+
+    <div id="action-buttons">
+        <button id="btn-download" onclick="downloadImage()">🖼️ Download as Image</button>
+        <button id="btn-download-pdf" onclick="downloadPDF()">📄 Download as PDF</button>
+    </div>
+
+    <div id="report-wrapper">
+        <div id="report-container" class="report-container">
+            
+            <div class="report-title-row">
+                <img src="https://upload.wikimedia.org/wikipedia/en/3/32/India_Post.svg?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=original" alt="India Post Logo">
+                <h3>PLI ENDOWMENT ASSURANCE (SANTOSH) ESTIMATE</h3>
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Emblem_of_India.svg/250px-Emblem_of_India.svg.png" alt="Govt of India Logo" crossorigin="anonymous">
+            </div>
+
+            <h4 id="out-report-title" style="margin-top: 0; margin-bottom: 15px; font-size: 1.2em; color: #000; font-weight: normal;">Endowment Assurance - Monthly Premium</h4>
+            <table style="margin-bottom: 25px; width: 100%;">
+                <tr>
+                    <td style="width: 50%;">Effective Date</td>
+                    <td id="out-effective-date"></td>
+                </tr>
+                <tr>
+                    <td>Policy Holder Age</td>
+                    <td id="out-pli-age"></td>
+                </tr>
+                <tr>
+                    <td>Spouse Age</td>
+                    <td>0</td>
+                </tr>
+                <tr>
+                    <td>Effective Age</td>
+                    <td>0</td>
+                </tr>
+                <tr>
+                    <td>Sum Assured</td>
+                    <td id="out-pli-sa"></td>
+                </tr>
+                <tr>
+                    <td>Bonus Rate</td>
+                    <td>Rs. <span id="out-pli-bonus"></span> per Rs. 1000 sum assured</td>
+                </tr>
+                <tr>
+                    <td>Bonus per Annum</td>
+                    <td id="out-pli-bonus-pa"></td>
+                </tr>
+                <tr>
+                    <td>GST</td>
+                    <td>0.00</td>
+                </tr>
+            </table>
+
+            <div class="report-section" style="margin-top: 10px;">
+                <h4 style="background: none; border: none; padding: 0; margin-bottom: 10px; font-size: 1.1em; color: #000; font-weight: normal;">Premium Breakdown</h4>
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Maturity Age</th>
+                                <th>Duration</th>
+                                <th>Premium</th>
+                                <th>Rebate</th>
+                                <th>Tax</th>
+                                <th>Net Premium</th>
+                                <th>Total Bonus</th>
+                                <th>Maturity Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pli-table-body">
+                            <!-- Rows will be injected here via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="footer-note" style="border: none; margin-top: 15px;">
+                <strong>Disclaimer:</strong> This is a computer-generated estimate for reference purposes. Actual premium and maturity values may vary slightly based on India Post official tables and future bonus declarations.
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
