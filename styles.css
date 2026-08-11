@@ -371,12 +371,14 @@ th {
 @media print {
     @page {
         size: A4 portrait;
-        margin: 12mm;
+        margin: 8mm; /* Very small margins to maximize space */
     }
     body {
         margin: 0;
         padding: 0;
         background-color: #fff;
+        /* Global zoom to guarantee everything fits on a single page in Chromium browsers */
+        zoom: 0.75; 
     }
     .container, #action-buttons, .calculation-note {
         display: none !important;
@@ -390,26 +392,55 @@ th {
         margin: 0 !important;
     }
     .report-container {
+        /* Heavily reduce padding and fonts to aggressively compact the layout */
         padding: 0 !important;
         border: none !important;
         width: 100% !important;
         max-width: none !important;
     }
+    .report-title-row {
+        padding-bottom: 8px !important;
+        margin-bottom: 12px !important;
+    }
     .report-title-row img {
-        height: 60px !important;
+        height: 45px !important;
+    }
+    .report-title-row h3 {
+        font-size: 1.2em !important;
+    }
+    .basis-box {
+        padding: 8px !important;
+        margin-top: 10px !important;
+    }
+    .report-section {
+        margin-top: 15px !important;
+    }
+    .report-section h4 {
+        padding: 6px !important;
+        margin-bottom: 8px !important;
+        font-size: 1em !important;
     }
     .signature-section {
         page-break-inside: avoid;
+        margin-top: 40px !important;
     }
     table {
         page-break-inside: auto;
+        margin-bottom: 10px !important;
     }
     tr {
         page-break-inside: avoid;
         page-break-after: auto;
     }
     th, td {
-        padding: 8px !important;
-        font-size: 11pt !important;
+        padding: 5px 6px !important;
+        font-size: 9pt !important;
+    }
+    .final-row, .recovery-row, .settlement-row {
+        font-size: 10pt !important;
+    }
+    .footer-note {
+        margin-top: 15px !important;
+        padding-top: 8px !important;
     }
 }
