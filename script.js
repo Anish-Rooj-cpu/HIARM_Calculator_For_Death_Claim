@@ -290,43 +290,82 @@ function downloadImage() {
 function downloadPDF() {
     const btn = document.getElementById('btn-download-pdf');
     const originalText = btn.innerHTML;
-    btn.innerHTML = '🖨️ Preparing...';
+    btn.innerHTML = '⏳ Generating PDF...';
     btn.disabled = true;
 
     setTimeout(() => {
         const reportNode = document.getElementById('report-container');
-        
-        // Calculate the natural desktop height of the report
-        const desktopHeight = reportNode.scrollHeight;
-        
-        // Browsers add header/footer and hardware margins. The actual safe printable area 
-        // in standard 96dpi pixels is much smaller than 1122px. 
-        // 750px is a highly conservative threshold that guarantees it fits on 1 page.
-        const maxSafeHeight = 750;
-        let printZoom = 1;
-        
-        if (desktopHeight > maxSafeHeight) {
-            // Mathematically scale down just enough to fit
-            printZoom = (maxSafeHeight / desktopHeight);
-        }
-        
-        // Apply the dynamic zoom to the entire body. Chrome/Edge will use this during printing.
-        document.body.style.zoom = printZoom;
 
-        const nameInput = document.getElementById('in-name').value.trim();
-        const safeName = nameInput ? nameInput.replace(/[^a-zA-Z0-9]/g, '_') : 'Account_Holder';
-        
-        // Temporarily change document title so "Save as PDF" uses this filename
-        const originalTitle = document.title;
-        document.title = `HIARM_${safeName}`;
-        
-        // Trigger native browser print dialog
-        window.print();
-        
-        // Restore title, zoom, and button after the print dialog closes
-        document.title = originalTitle;
-        document.body.style.zoom = 1;
-        btn.innerHTML = originalText;
-        btn.disabled = false;
+        // Save original styles
+        const origBodyWidth = document.body.style.width;
+        const origWidth = reportNode.style.width;
+        const origMaxWidth = reportNode.style.maxWidth;
+        const origPadding = reportNode.style.padding;
+
+        // Force a fixed desktop width so mobile doesn't clip anything
+        const captureWidth = 900;
+        document.body.style.width = captureWidth + 'px';
+        reportNode.style.width = captureWidth + 'px';
+        reportNode.style.maxWidth = 'none';
+        reportNode.style.padding = '30px';
+
+        html2canvas(reportNode, {
+            scale: 2,
+            backgroundColor: '#ffffff',
+            windowWidth: captureWidth,
+            scrollY: 0,
+            useCORS: true
+        }).then(canvas => {
+            // Restore original styles immediately
+            document.body.style.width = origBodyWidth;
+            reportNode.style.width = origWidth;
+            reportNode.style.maxWidth = origMaxWidth;
+            reportNode.style.padding = origPadding;
+
+            const { jsPDF } = window.jspdf;
+
+            // A4 dimensions in mm: 210 x 297
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const pageW = 210;
+            const pageH = 297;
+
+            // Small margin for a clean look (5mm each side)
+            const margin = 5;
+            const usableW = pageW - margin * 2;
+            const usableH = pageH - margin * 2;
+
+            // Calculate image dimensions to fit within usable area
+            const canvasAspect = canvas.height / canvas.width;
+            let imgW = usableW;
+            let imgH = imgW * canvasAspect;
+
+            // If it's taller than one page, scale down to fit
+            if (imgH > usableH) {
+                imgH = usableH;
+                imgW = imgH / canvasAspect;
+            }
+
+            // Center horizontally
+            const xOffset = margin + (usableW - imgW) / 2;
+
+            const imgData = canvas.toDataURL('image/jpeg', 0.8);
+            pdf.addImage(imgData, 'JPEG', xOffset, margin, imgW, imgH);
+
+            // Generate filename from depositor name
+            const nameInput = document.getElementById('in-name').value.trim();
+            const safeName = nameInput ? nameInput.replace(/[^a-zA-Z0-9]/g, '_') : 'Account_Holder';
+            pdf.save(`HIARM_${safeName}.pdf`);
+
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }).catch(err => {
+            console.error('PDF generation error:', err);
+            document.body.style.width = origBodyWidth;
+            reportNode.style.width = origWidth;
+            reportNode.style.maxWidth = origMaxWidth;
+            reportNode.style.padding = origPadding;
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        });
     }, 100);
 }
