@@ -263,8 +263,12 @@ function downloadImage() {
             reportNode.style.maxWidth = originalMaxWidth;
             reportNode.style.padding = originalPadding;
             
+            const nameInput = document.getElementById('in-name').value.trim();
+            const safeName = nameInput ? nameInput.replace(/[^a-zA-Z0-9]/g, '_') : 'Account_Holder';
+            const fileName = `HIARM_${safeName}.png`;
+
             const link = document.createElement('a');
-            link.download = 'HIARM_Recovery_Calculation.png';
+            link.download = fileName;
             link.href = canvas.toDataURL('image/png');
             link.click();
             
@@ -315,14 +319,20 @@ function downloadPDF() {
             reportNode.style.maxWidth = originalMaxWidth;
             reportNode.style.padding = originalPadding;
             
-            const imgData = canvas.toDataURL('image/png');
+            // Compress the image data as JPEG with 80% quality to significantly reduce PDF size
+            const imgData = canvas.toDataURL('image/jpeg', 0.8);
             const { jsPDF } = window.jspdf;
             
             // Use exact canvas dimensions for the PDF page to eliminate any side margins
             const pdf = new jsPDF('p', 'px', [canvas.width, canvas.height]);
             
-            pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
-            pdf.save('HIARM_Recovery_Calculation.pdf');
+            pdf.addImage(imgData, 'JPEG', 0, 0, canvas.width, canvas.height);
+            
+            const nameInput = document.getElementById('in-name').value.trim();
+            const safeName = nameInput ? nameInput.replace(/[^a-zA-Z0-9]/g, '_') : 'Account_Holder';
+            const fileName = `HIARM_${safeName}.pdf`;
+            
+            pdf.save(fileName);
             
             btn.innerHTML = originalText;
             btn.disabled = false;
