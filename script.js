@@ -329,27 +329,22 @@ function downloadPDF() {
             const pageW = 210;
             const pageH = 297;
 
-            // Small margin for a clean look (5mm each side)
-            const margin = 5;
-            const usableW = pageW - margin * 2;
-            const usableH = pageH - margin * 2;
-
-            // Calculate image dimensions to fit within usable area
+            // Zero margins — fill the entire page
             const canvasAspect = canvas.height / canvas.width;
-            let imgW = usableW;
+            let imgW = pageW;
             let imgH = imgW * canvasAspect;
 
             // If it's taller than one page, scale down to fit
-            if (imgH > usableH) {
-                imgH = usableH;
+            if (imgH > pageH) {
+                imgH = pageH;
                 imgW = imgH / canvasAspect;
             }
 
-            // Center horizontally
-            const xOffset = margin + (usableW - imgW) / 2;
+            // Center horizontally if scaled down due to height
+            const xOffset = (pageW - imgW) / 2;
 
             const imgData = canvas.toDataURL('image/jpeg', 0.8);
-            pdf.addImage(imgData, 'JPEG', xOffset, margin, imgW, imgH);
+            pdf.addImage(imgData, 'JPEG', xOffset, 0, imgW, imgH);
 
             // Generate filename from depositor name
             const nameInput = document.getElementById('in-name').value.trim();
