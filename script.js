@@ -219,6 +219,9 @@ function calculateHIARM() {
     document.getElementById('out-maturity-date').textContent = formatDate(maturityDate);
     document.getElementById('out-closure-date').textContent = formatDate(closureDate);
     
+    document.getElementById('out-scss-rate-disp').textContent = scssRate;
+    document.getElementById('out-posa-rate-disp').textContent = posaRate;
+    
     const tbody = document.getElementById('payout-table-body');
     tbody.innerHTML = '';
     if (payouts.length === 0) {
