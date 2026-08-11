@@ -333,9 +333,9 @@ function downloadPDF() {
             const pageW = 210;
             const pageH = 297;
 
-            // Professional document margins (like a real government letter)
-            const marginX = 12;
-            const marginY = 10;
+            // No margins — edge-to-edge content
+            const marginX = 0;
+            const marginY = 0;
             const usableW = pageW - marginX * 2;
             const usableH = pageH - marginY * 2;
 
