@@ -309,7 +309,7 @@ function downloadPDF() {
         document.body.style.width = captureWidth + 'px';
         reportNode.style.width = captureWidth + 'px';
         reportNode.style.maxWidth = 'none';
-        reportNode.style.padding = '45px 50px';
+        reportNode.style.padding = '30px 10px';
         reportNode.style.fontSize = '15px';
 
         html2canvas(reportNode, {
