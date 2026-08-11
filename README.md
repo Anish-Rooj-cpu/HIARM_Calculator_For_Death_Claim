@@ -21,6 +21,11 @@ A lightweight, purely client-side web application designed to automatically calc
 - **[html2canvas](https://html2canvas.hertzen.com/)**: To capture a high-resolution snapshot of the generated HTML report.
 - **[jsPDF](https://raw.githack.com/MrRio/jsPDF/master/docs/jsPDF.html)**: To seamlessly embed the captured image into an exact-fit PDF document.
 
+## 🌐 Live Access
+
+You can use the calculator instantly without downloading anything. The app is securely hosted via GitHub Pages:
+👉 **[Access the Live HIARM Calculator Here](https://Anish-Rooj-cpu.github.io/HIARM_Calculator_For_Death_Claim/)**
+
 ## ⚙️ How to Use (Local Setup)
 
 Since this application is entirely client-side, no server, framework, or build process is required!
