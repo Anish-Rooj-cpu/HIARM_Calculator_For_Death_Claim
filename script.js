@@ -42,8 +42,8 @@ function addManualEntry() {
 }
 
 function calculateHIARM() {
-    const name = document.getElementById('in-name').value;
-    const acc = document.getElementById('in-acc').value;
+    const name = document.getElementById('in-name').value.trim();
+    const acc = document.getElementById('in-acc').value.trim();
     const principal = parseFloat(document.getElementById('in-principal').value);
     const scssRate = parseFloat(document.getElementById('in-scss-rate').value);
     const posaRate = parseFloat(document.getElementById('in-posa-rate').value);
@@ -52,9 +52,30 @@ function calculateHIARM() {
     const deathStr = document.getElementById('in-death-date').value;
     const closureStr = document.getElementById('in-closure-date').value;
 
+    // --- Input Validation ---
+    if (!name || !acc || isNaN(principal) || principal <= 0 || isNaN(scssRate) || isNaN(posaRate) || !openStr || !deathStr || !closureStr) {
+        alert('Please fill in all fields before generating the report.');
+        return;
+    }
+
     const openDate = new Date(openStr + 'T00:00:00Z');
     const deathDate = new Date(deathStr + 'T00:00:00Z');
     const closureDate = new Date(closureStr + 'T00:00:00Z');
+
+    if (isNaN(openDate.getTime()) || isNaN(deathDate.getTime()) || isNaN(closureDate.getTime())) {
+        alert('Please enter valid dates.');
+        return;
+    }
+
+    if (deathDate < openDate) {
+        alert('Death date cannot be before account opening date.');
+        return;
+    }
+
+    if (closureDate < deathDate) {
+        alert('Closure date cannot be before death date.');
+        return;
+    }
     
     const maturityDate = new Date(openDate.valueOf());
     maturityDate.setUTCFullYear(maturityDate.getUTCFullYear() + 5);
