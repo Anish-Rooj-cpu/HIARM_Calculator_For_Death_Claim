@@ -294,6 +294,24 @@ function downloadPDF() {
     btn.disabled = true;
 
     setTimeout(() => {
+        const reportNode = document.getElementById('report-container');
+        
+        // Calculate the natural desktop height of the report
+        const desktopHeight = reportNode.scrollHeight;
+        
+        // A standard A4 printable area height is approximately 1000px.
+        // We dynamically calculate a zoom factor to strictly guarantee the report fits on exactly 1 page.
+        const maxSafeHeight = 1000;
+        let printZoom = 1;
+        
+        if (desktopHeight > maxSafeHeight) {
+            // Mathematically scale down just enough to fit, with a 3% safety buffer
+            printZoom = (maxSafeHeight / desktopHeight) * 0.97;
+        }
+        
+        // Apply the dynamic zoom to the entire body. Chrome/Edge will use this during printing.
+        document.body.style.zoom = printZoom;
+
         const nameInput = document.getElementById('in-name').value.trim();
         const safeName = nameInput ? nameInput.replace(/[^a-zA-Z0-9]/g, '_') : 'Account_Holder';
         
@@ -301,11 +319,12 @@ function downloadPDF() {
         const originalTitle = document.title;
         document.title = `HIARM_${safeName}`;
         
-        // Trigger native browser print dialog (which supports Save as PDF with zero margins perfectly)
+        // Trigger native browser print dialog
         window.print();
         
-        // Restore title and button
+        // Restore title, zoom, and button after the print dialog closes
         document.title = originalTitle;
+        document.body.style.zoom = 1;
         btn.innerHTML = originalText;
         btn.disabled = false;
     }, 100);
