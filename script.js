@@ -245,6 +245,9 @@ function downloadImage() {
     setTimeout(() => {
         const reportNode = document.getElementById('report-container');
         
+        const originalBodyWidth = document.body.style.width;
+        document.body.style.width = '850px';
+
         const originalWidth = reportNode.style.width;
         const originalMaxWidth = reportNode.style.maxWidth;
         const originalPadding = reportNode.style.padding;
@@ -257,8 +260,10 @@ function downloadImage() {
             scale: 2, 
             backgroundColor: "#ffffff",
             windowWidth: 850,
+            scrollY: 0,
             useCORS: true 
         }).then(canvas => {
+            document.body.style.width = originalBodyWidth;
             reportNode.style.width = originalWidth;
             reportNode.style.maxWidth = originalMaxWidth;
             reportNode.style.padding = originalPadding;
@@ -291,6 +296,9 @@ function downloadPDF() {
     setTimeout(() => {
         const reportNode = document.getElementById('report-container');
         
+        const originalBodyWidth = document.body.style.width;
+        document.body.style.width = '850px';
+
         const originalWidth = reportNode.style.width;
         const originalMaxWidth = reportNode.style.maxWidth;
         const originalPadding = reportNode.style.padding;
@@ -307,6 +315,7 @@ function downloadPDF() {
             scale: 2, 
             backgroundColor: "#ffffff",
             windowWidth: 850,
+            scrollY: 0,
             useCORS: true,
             onclone: function(clonedDoc) {
                 if (needsCompact) {
@@ -315,6 +324,7 @@ function downloadPDF() {
                 }
             }
         }).then(canvas => {
+            document.body.style.width = originalBodyWidth;
             reportNode.style.width = originalWidth;
             reportNode.style.maxWidth = originalMaxWidth;
             reportNode.style.padding = originalPadding;
@@ -323,10 +333,13 @@ function downloadPDF() {
             const imgData = canvas.toDataURL('image/jpeg', 0.8);
             const { jsPDF } = window.jspdf;
             
-            // Use exact canvas dimensions for the PDF page to eliminate any side margins
-            const pdf = new jsPDF('p', 'px', [canvas.width, canvas.height]);
+            // Set PDF physical width to standard A4 (595.28 points) to prevent massive zooming on desktop.
+            // Scale the height proportionally to exactly wrap the image to eliminate margins.
+            const pdfWidth = 595.28;
+            const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+            const pdf = new jsPDF('p', 'pt', [pdfWidth, pdfHeight]);
             
-            pdf.addImage(imgData, 'JPEG', 0, 0, canvas.width, canvas.height);
+            pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
             
             const nameInput = document.getElementById('in-name').value.trim();
             const safeName = nameInput ? nameInput.replace(/[^a-zA-Z0-9]/g, '_') : 'Account_Holder';
