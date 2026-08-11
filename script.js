@@ -295,69 +295,43 @@ function downloadPDF() {
 
     setTimeout(() => {
         const reportNode = document.getElementById('report-container');
-
-        // Save original styles
-        const origBodyWidth = document.body.style.width;
-        const origWidth = reportNode.style.width;
-        const origMaxWidth = reportNode.style.maxWidth;
-        const origPadding = reportNode.style.padding;
-        const origFontSize = reportNode.style.fontSize;
-
-        // Use a wide capture width so that the content height stays 
-        // within A4 proportions (1:1.414) without needing to shrink
         const captureWidth = 1100;
-        document.body.style.width = captureWidth + 'px';
-        reportNode.style.width = captureWidth + 'px';
-        reportNode.style.maxWidth = 'none';
-        reportNode.style.padding = '30px 10px';
-        reportNode.style.fontSize = '15px';
 
         html2canvas(reportNode, {
-            scale: 3,              // High resolution for crisp text
+            scale: 3,
             backgroundColor: '#ffffff',
             windowWidth: captureWidth,
             scrollY: 0,
-            useCORS: true
+            useCORS: true,
+            // Apply all style overrides on the CLONE, not the live page
+            onclone: function(clonedDoc) {
+                const clonedBody = clonedDoc.body;
+                const clonedReport = clonedDoc.getElementById('report-container');
+                clonedBody.style.width = captureWidth + 'px';
+                clonedReport.style.width = captureWidth + 'px';
+                clonedReport.style.maxWidth = 'none';
+                clonedReport.style.padding = '30px 10px';
+                clonedReport.style.fontSize = '15px';
+            }
         }).then(canvas => {
-            // Restore original styles immediately
-            document.body.style.width = origBodyWidth;
-            reportNode.style.width = origWidth;
-            reportNode.style.maxWidth = origMaxWidth;
-            reportNode.style.padding = origPadding;
-            reportNode.style.fontSize = origFontSize;
-
             const { jsPDF } = window.jspdf;
-
-            // A4 in mm
             const pdf = new jsPDF('p', 'mm', 'a4');
             const pageW = 210;
             const pageH = 297;
 
-            // No margins — edge-to-edge content
-            const marginX = 0;
-            const marginY = 0;
-            const usableW = pageW - marginX * 2;
-            const usableH = pageH - marginY * 2;
-
             const canvasAspect = canvas.height / canvas.width;
-            let imgW = usableW;
+            let imgW = pageW;
             let imgH = imgW * canvasAspect;
 
-            // Scale down only if needed to fit one page
-            if (imgH > usableH) {
-                imgH = usableH;
+            if (imgH > pageH) {
+                imgH = pageH;
                 imgW = imgH / canvasAspect;
             }
 
-            // Center the content
-            const xOffset = marginX + (usableW - imgW) / 2;
-            const yOffset = marginY;
-
-            // High quality JPEG for crisp text without huge file size
+            const xOffset = (pageW - imgW) / 2;
             const imgData = canvas.toDataURL('image/jpeg', 0.92);
-            pdf.addImage(imgData, 'JPEG', xOffset, yOffset, imgW, imgH);
+            pdf.addImage(imgData, 'JPEG', xOffset, 0, imgW, imgH);
 
-            // Generate filename
             const nameInput = document.getElementById('in-name').value.trim();
             const safeName = nameInput ? nameInput.replace(/[^a-zA-Z0-9]/g, '_') : 'Account_Holder';
             pdf.save(`HIARM_${safeName}.pdf`);
@@ -366,11 +340,6 @@ function downloadPDF() {
             btn.disabled = false;
         }).catch(err => {
             console.error('PDF generation error:', err);
-            document.body.style.width = origBodyWidth;
-            reportNode.style.width = origWidth;
-            reportNode.style.maxWidth = origMaxWidth;
-            reportNode.style.padding = origPadding;
-            reportNode.style.fontSize = origFontSize;
             btn.innerHTML = originalText;
             btn.disabled = false;
         });
