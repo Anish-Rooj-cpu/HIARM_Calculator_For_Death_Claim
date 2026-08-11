@@ -531,15 +531,19 @@
 
             <div class="report-section">
                 <h4>4. NET FINAL SETTLEMENT AMOUNT</h4>
-                <div class="calculation-note">The net final payout amount adjusted for the excess interest already credited.</div>
+                <div class="calculation-note">The net final payout amount adjusted for the excess interest already credited. Includes Post-Maturity Interest (PMI) if the account remained open beyond 5 years.</div>
                 <table>
                     <tr>
                         <td>Principal Deposit</td>
                         <td class="amount-col">₹<span id="out-final-principal"></span></td>
                     </tr>
                     <tr>
-                        <td>Add: Total Valid Entitlement</td>
+                        <td>Add: Total Valid Entitlement (from above)</td>
                         <td class="amount-col">+ ₹<span id="out-final-entitlement"></span></td>
+                    </tr>
+                    <tr id="row-pmi" style="display:none;">
+                        <td>Add: Post-Maturity Interest (PMI) [<span id="out-pmi-period"></span>]</td>
+                        <td class="amount-col">+ ₹<span id="out-pmi-amount"></span></td>
                     </tr>
                     <tr>
                         <td>Less: Interest Already Credited (System Payout)</td>
@@ -553,7 +557,7 @@
             </div>
             
             <div class="footer-note">
-                <strong>Note to Operator:</strong> Execute the Net Recovery Amount as a HIARM Debit to perfectly balance the SCSS ledger up to the End Date. If the account crossed maturity, Post-Maturity Interest (PMI) will be auto-calculated by Finacle during final closure.
+                <strong>Note to Operator:</strong> Execute the Net Recovery Amount as a HIARM Debit to perfectly balance the SCSS ledger up to the End Date. If the account crossed maturity, the Post-Maturity Interest (PMI) calculated above will be automatically disbursed by Finacle during final closure.
             </div>
         </div>
     </div>
@@ -730,7 +734,25 @@
             const totalEntitlement = scssAmount + posaAmount;
             const recoveryAmount = systemPaid - totalEntitlement;
             
-            const finalSettlement = principal + totalEntitlement - systemPaid;
+            // --- Post Maturity Interest (PMI) Logic ---
+            let pmiDays = 0;
+            let pmiAmount = 0;
+            
+            if (closureDate > maturityDate) {
+                pmiDays = dateDiffInDays(maturityDate, closureDate); // excludes closure day
+                pmiAmount = Math.round((principal * posaRate * pmiDays) / 36500);
+                
+                const pmiEndDate = addDaysToDate(closureDate, -1);
+                const pmiPeriodStr = `${formatDate(maturityDate)} to ${formatDate(pmiEndDate)} (${pmiDays} Days)`;
+                
+                document.getElementById('row-pmi').style.display = 'table-row';
+                document.getElementById('out-pmi-period').textContent = pmiPeriodStr;
+                document.getElementById('out-pmi-amount').textContent = formatIN.format(pmiAmount);
+            } else {
+                document.getElementById('row-pmi').style.display = 'none';
+            }
+
+            const finalSettlement = principal + totalEntitlement + pmiAmount - systemPaid;
 
             document.getElementById('out-name').textContent = name;
             document.getElementById('out-acc').textContent = acc;
