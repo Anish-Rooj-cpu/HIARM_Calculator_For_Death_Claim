@@ -1,4 +1,5 @@
 const formatIN = new Intl.NumberFormat('en-IN');
+let pliChartInstance = null;
 
 function calculateAgeFromDOB() {
     const dobStr = document.getElementById('pli-dob').value;
@@ -29,6 +30,7 @@ function calculatePLI() {
     const age = parseInt(document.getElementById('pli-age').value);
     const sa = parseFloat(document.getElementById('pli-sa').value);
     const bonusRate = parseFloat(document.getElementById('pli-bonus-rate').value);
+    const spouseAge = parseInt(document.getElementById('pli-spouse-age').value);
 
     if (isNaN(age) || age < 19 || age > 55) {
         alert("Please enter a valid current age (between 19 and 55).");
@@ -51,6 +53,8 @@ function calculatePLI() {
     tbody.innerHTML = '';
 
     let optionsGenerated = false;
+    let lastTotalBonus = 0;
+    let lastMatAgeValid = 0;
 
     // GST is now zero for PLI
     const gstRate = 0.00; 
@@ -117,6 +121,9 @@ function calculatePLI() {
             
             // Maturity Amount
             let maturityAmount = sa + totalBonus;
+            
+            lastTotalBonus = totalBonus;
+            lastMatAgeValid = matAge;
 
             const tr = document.createElement('tr');
             tr.innerHTML = `
@@ -145,6 +152,43 @@ function calculatePLI() {
     document.getElementById('out-pli-bonus').textContent = bonusRate;
     document.getElementById('out-pli-bonus-pa').textContent = (sa / 1000) * bonusRate;
     document.getElementById('out-report-title').textContent = `Endowment Assurance - ${frequencyText} Premium`;
+    document.getElementById('out-spouse-age').textContent = isNaN(spouseAge) ? '0' : spouseAge;
+
+    if (optionsGenerated) {
+        if (pliChartInstance) {
+            pliChartInstance.destroy();
+        }
+        const ctx = document.getElementById('pliChart').getContext('2d');
+        pliChartInstance = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: ['Sum Assured', 'Total Bonus (Est.)'],
+                datasets: [{
+                    data: [sa, lastTotalBonus],
+                    backgroundColor: ['#079992', '#e55039'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { font: { size: 14 } }
+                    },
+                    title: {
+                        display: true,
+                        text: `Maturity Projection (Age ${lastMatAgeValid})`,
+                        font: { size: 16 }
+                    }
+                }
+            }
+        });
+        document.getElementById('chart-container-section').style.display = 'flex';
+    } else {
+        document.getElementById('chart-container-section').style.display = 'none';
+    }
 
     document.getElementById('report-wrapper').style.display = 'block';
     document.getElementById('action-buttons').style.display = 'flex';
@@ -223,7 +267,7 @@ function downloadPDF() {
                 clonedBody.style.width = captureWidth + 'px';
                 clonedReport.style.width = captureWidth + 'px';
                 clonedReport.style.maxWidth = 'none';
-                clonedReport.style.padding = '30px 10px';
+                clonedReport.style.padding = '0px 10px 30px 10px'; // Removed top padding
                 clonedReport.style.fontSize = '15px';
             }
         }).then(canvas => {
@@ -243,7 +287,7 @@ function downloadPDF() {
 
             const xOffset = (pageW - imgW) / 2;
             const imgData = canvas.toDataURL('image/jpeg', 0.92);
-            pdf.addImage(imgData, 'JPEG', xOffset, 10, imgW, imgH); // Added some top margin
+            pdf.addImage(imgData, 'JPEG', xOffset, 0, imgW, imgH); // Removed top margin
 
             const nameInput = document.getElementById('pli-name').value.trim();
             const safeName = nameInput ? nameInput.replace(/[^a-zA-Z0-9]/g, '_') : 'PLI_Estimate';

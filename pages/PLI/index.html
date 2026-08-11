@@ -7,6 +7,7 @@
     <!-- Include html2canvas and jsPDF for image/pdf generation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="../../styles.css?v=6">
 </head>
 <body>
@@ -33,6 +34,10 @@
                     <input type="number" id="pli-age" placeholder="Age (e.g. 25)" min="19" max="55" style="flex: 1;" title="Enter Current Age">
                     <input type="date" id="pli-dob" onchange="calculateAgeFromDOB()" style="flex: 1;" title="Or pick Date of Birth">
                 </div>
+            </div>
+            <div class="form-group">
+                <label>Spouse Age (Optional)</label>
+                <input type="number" id="pli-spouse-age" placeholder="e.g. 23" min="19" max="55">
             </div>
             <div class="form-group">
                 <label>Sum Assured (₹)</label>
@@ -81,7 +86,7 @@
                 </tr>
                 <tr>
                     <td>Spouse Age</td>
-                    <td>0</td>
+                    <td id="out-spouse-age">0</td>
                 </tr>
                 <tr>
                     <td>Effective Age</td>
@@ -125,6 +130,12 @@
                             <!-- Rows will be injected here via JS -->
                         </tbody>
                     </table>
+                </div>
+            </div>
+            
+            <div id="chart-container-section" class="report-section" style="margin-top: 20px; display: none; justify-content: center; flex-direction: column; align-items: center;">
+                <div style="width: 300px; height: 300px;">
+                    <canvas id="pliChart"></canvas>
                 </div>
             </div>
             
