@@ -428,7 +428,7 @@ th {
     }
     .signature-section {
         page-break-inside: avoid;
-        margin-top: 60px !important;
+        margin-top: 30px !important;
     }
     table {
         page-break-inside: auto;

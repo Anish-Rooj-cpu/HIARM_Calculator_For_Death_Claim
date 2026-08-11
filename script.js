@@ -299,14 +299,15 @@ function downloadPDF() {
         // Calculate the natural desktop height of the report
         const desktopHeight = reportNode.scrollHeight;
         
-        // A standard A4 printable area height is approximately 1000px.
-        // We dynamically calculate a zoom factor to strictly guarantee the report fits on exactly 1 page.
-        const maxSafeHeight = 1000;
+        // Browsers add header/footer and hardware margins. The actual safe printable area 
+        // in standard 96dpi pixels is much smaller than 1122px. 
+        // 750px is a highly conservative threshold that guarantees it fits on 1 page.
+        const maxSafeHeight = 750;
         let printZoom = 1;
         
         if (desktopHeight > maxSafeHeight) {
-            // Mathematically scale down just enough to fit, with a 3% safety buffer
-            printZoom = (maxSafeHeight / desktopHeight) * 0.97;
+            // Mathematically scale down just enough to fit
+            printZoom = (maxSafeHeight / desktopHeight);
         }
         
         // Apply the dynamic zoom to the entire body. Chrome/Edge will use this during printing.
