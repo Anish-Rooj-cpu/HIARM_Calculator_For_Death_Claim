@@ -297,24 +297,24 @@ function downloadPDF() {
         const reportNode = document.getElementById('report-container');
         
         const originalBodyWidth = document.body.style.width;
-        document.body.style.width = '850px';
+        document.body.style.width = '1000px';
 
         const originalWidth = reportNode.style.width;
         const originalMaxWidth = reportNode.style.maxWidth;
         const originalPadding = reportNode.style.padding;
         
-        reportNode.style.width = '850px';
+        reportNode.style.width = '1000px';
         reportNode.style.maxWidth = 'none';
         reportNode.style.padding = '40px'; 
         
         // Check if report is likely to exceed 1 A4 page
-        // A4 ratio is ~1.414. For 850px width, 1 page height is ~1202px.
-        const needsCompact = reportNode.scrollHeight > 1150;
+        // A4 ratio is ~1.414. For 1000px width, 1 page height is ~1414px.
+        const needsCompact = reportNode.scrollHeight > 1350;
 
         html2canvas(reportNode, {
             scale: 2, 
             backgroundColor: "#ffffff",
-            windowWidth: 850,
+            windowWidth: 1000,
             scrollY: 0,
             useCORS: true,
             onclone: function(clonedDoc) {
@@ -333,13 +333,26 @@ function downloadPDF() {
             const imgData = canvas.toDataURL('image/jpeg', 0.8);
             const { jsPDF } = window.jspdf;
             
-            // Set PDF physical width to standard A4 (595.28 points) to prevent massive zooming on desktop.
-            // Scale the height proportionally to exactly wrap the image to eliminate margins.
-            const pdfWidth = 595.28;
-            const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-            const pdf = new jsPDF('p', 'pt', [pdfWidth, pdfHeight]);
+            // Use standard A4 physical dimensions for the PDF page.
+            // This ensures perfect compatibility with standard printers without causing letterboxing (side margins).
+            const pdf = new jsPDF('p', 'pt', 'a4');
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pageHeight = pdf.internal.pageSize.getHeight();
             
-            pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+            let imgWidth = pdfWidth;
+            let imgHeight = (canvas.height * pdfWidth) / canvas.width;
+            
+            // Force fit it into 1 page proportionally if it exceeds A4 height
+            if (imgHeight > pageHeight) {
+                const ratio = pageHeight / imgHeight;
+                imgHeight = pageHeight;
+                imgWidth = imgWidth * ratio;
+            }
+            
+            // Center horizontally (only applies if it was scaled down due to height)
+            const xOffset = (pdfWidth - imgWidth) / 2;
+            
+            pdf.addImage(imgData, 'JPEG', xOffset, 0, imgWidth, imgHeight);
             
             const nameInput = document.getElementById('in-name').value.trim();
             const safeName = nameInput ? nameInput.replace(/[^a-zA-Z0-9]/g, '_') : 'Account_Holder';
