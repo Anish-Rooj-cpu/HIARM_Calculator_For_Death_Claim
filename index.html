@@ -8,10 +8,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         :root {
-            --primary-color: #1e3799;
-            --secondary-color: #4a69bd;
+            --primary-color: #2c3e50;
+            --secondary-color: #34495e;
             --alert-color: #e55039;
-            --success-color: #27ae60;
             --border-color: #bdc3c7;
             --bg-color: #f1f2f6;
         }
@@ -120,7 +119,7 @@
         }
 
         button:hover {
-            background-color: #0c2461;
+            background-color: #1a252f;
         }
 
         .btn-small {
@@ -132,7 +131,7 @@
         }
         
         .btn-small:hover {
-            background-color: #3c559c;
+            background-color: #2c3e50;
         }
 
         .btn-remove {
@@ -177,7 +176,6 @@
             box-sizing: border-box;
         }
 
-        /* FLEX HEADER FOR LOGOS AND TITLE */
         .report-title-row {
             display: flex;
             justify-content: space-between;
@@ -203,7 +201,6 @@
             padding: 0 15px;
         }
 
-        /* SYMMETRICAL GRID FOR REPORT META INFO */
         .report-meta {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
@@ -213,16 +210,21 @@
             width: 100%;
         }
 
-        .report-meta > span:nth-child(1) {
-            text-align: left;
+        .report-meta > span:nth-child(1) { text-align: left; }
+        .report-meta > span:nth-child(2) { text-align: center; }
+        .report-meta > span:nth-child(3) { text-align: right; }
+
+        .basis-box {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #000;
+            background-color: #fafafa;
         }
 
-        .report-meta > span:nth-child(2) {
-            text-align: center;
-        }
-
-        .report-meta > span:nth-child(3) {
-            text-align: right;
+        .basis-box ul {
+            margin: 8px 0 0 20px;
+            font-size: 0.95em;
+            padding-left: 0;
         }
 
         .report-section {
@@ -252,7 +254,7 @@
         }
 
         th {
-            background-color: #fafafa;
+            background-color: #f1f2f6;
         }
 
         .amount-col {
@@ -263,114 +265,49 @@
 
         .calculation-note {
             font-size: 0.9em;
-            color: #444;
+            color: #333;
             margin-bottom: 10px;
             font-style: italic;
         }
 
         .final-row {
-            background-color: #eaeaea;
-            font-size: 1.15em;
+            background-color: #f8f9fa;
+            font-size: 1.1em;
         }
         
-        .recovery-row {
-            background-color: var(--alert-color);
-            color: white;
-            font-size: 1.25em;
+        .recovery-row, .settlement-row {
+            background-color: #f8f9fa;
+            color: #000;
+            font-size: 1.15em;
             text-transform: uppercase;
-        }
-
-        .settlement-row {
-            background-color: var(--success-color);
-            color: white;
-            font-size: 1.25em;
-            text-transform: uppercase;
+            border: 2px solid #000;
         }
 
         .footer-note {
-            font-size: 0.9em;
-            font-style: italic;
+            font-size: 0.95em;
             margin-top: 25px;
             border-top: 1px dashed #000;
             padding-top: 15px;
-            color: #333;
+            color: #000;
         }
 
         /* --- Media Queries for Mobile Responsiveness --- */
         @media screen and (max-width: 768px) {
-            body {
-                padding: 10px;
-            }
-
-            .container {
-                padding: 20px;
-            }
-
-            .form-grid {
-                grid-template-columns: 1fr;
-                gap: 15px;
-            }
-
-            .full-width {
-                grid-column: span 1;
-                padding: 10px;
-            }
-
-            .manual-entry-row {
-                flex-direction: column;
-                align-items: stretch;
-                border: 1px solid #ddd;
-                padding: 10px;
-                border-radius: 4px;
-                background-color: #fff;
-            }
-
-            .btn-small {
-                width: 100%;
-                text-align: center;
-            }
-            
-            #report-wrapper {
-                border-radius: 8px;
-            }
-
-            .report-container {
-                padding: 15px;
-            }
-
-            .report-title-row {
-                padding-bottom: 10px;
-            }
-
-            .report-title-row img {
-                height: 40px;
-            }
-
-            .report-title-row h3 {
-                font-size: 1.1em;
-                padding: 0 5px;
-            }
-
-            /* Stack meta info centrally on small screens */
-            .report-meta {
-                display: flex;
-                flex-direction: column;
-                gap: 5px;
-                font-size: 0.9em;
-            }
-
-            .report-meta > span {
-                text-align: center !important;
-            }
-
-            th, td {
-                padding: 6px;
-                font-size: 0.85em;
-            }
-
-            .final-row, .recovery-row, .settlement-row {
-                font-size: 1em;
-            }
+            body { padding: 10px; }
+            .container { padding: 20px; }
+            .form-grid { grid-template-columns: 1fr; gap: 15px; }
+            .full-width { grid-column: span 1; padding: 10px; }
+            .manual-entry-row { flex-direction: column; align-items: stretch; border: 1px solid #ddd; padding: 10px; border-radius: 4px; background-color: #fff; }
+            .btn-small { width: 100%; text-align: center; }
+            #report-wrapper { border-radius: 8px; }
+            .report-container { padding: 15px; }
+            .report-title-row { padding-bottom: 10px; }
+            .report-title-row img { height: 40px; }
+            .report-title-row h3 { font-size: 1.1em; padding: 0 5px; }
+            .report-meta { display: flex; flex-direction: column; gap: 5px; font-size: 0.9em; }
+            .report-meta > span { text-align: center !important; }
+            th, td { padding: 6px; font-size: 0.85em; }
+            .final-row, .recovery-row, .settlement-row { font-size: 1em; }
         }
     </style>
 </head>
@@ -402,7 +339,7 @@
                 <input type="date" id="in-death-date" value="2025-12-06">
             </div>
             <div class="form-group">
-                <label>Date of Claim Closure (In Finacle)</label>
+                <label>Date of Claim Closure (In System)</label>
                 <input type="date" id="in-closure-date" value="2026-06-22">
             </div>
 
@@ -413,7 +350,7 @@
                 </div>
                 
                 <div id="manual-paid-container" style="display: none; margin-top: 10px; background: white; padding: 15px; border: 1px solid var(--border-color); border-radius: 6px;">
-                    <label style="margin-bottom: 10px; display: block;">Manually Enter Excess Finacle Payments (Date & Amount)</label>
+                    <label style="margin-bottom: 10px; display: block;">Manually Enter Excess Payments (Date & Amount)</label>
                     <div id="manual-entries-list">
                         <div class="manual-entry-row">
                             <input type="date" class="manual-date" style="flex: 1;">
@@ -424,7 +361,7 @@
                 </div>
 
                 <div id="auto-note" style="font-size: 0.9em; color: #555; margin-top: 5px;">
-                    <em>The system will automatically calculate the final quarter's start date, full quarters paid, and the maturity broken-period using Finacle rules.</em>
+                    <em>The system will automatically calculate the final quarter's start date, full quarters paid, and the maturity broken-period.</em>
                 </div>
             </div>
 
@@ -438,7 +375,7 @@
             </div>
         </div>
 
-        <button onclick="calculateHIARM()">Generate HIARM Report</button>
+        <button onclick="calculateHIARM()">Generate Report</button>
     </div>
 
     <button id="btn-download" onclick="downloadImage()">⬇ Download Report as Image</button>
@@ -446,7 +383,6 @@
     <div id="report-wrapper">
         <div id="report-container" class="report-container">
             
-            <!-- FIXED REPORT HEADER WITH LOGOS -->
             <div class="report-title-row">
                 <img src="https://upload.wikimedia.org/wikipedia/en/3/32/India_Post.svg?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=original" alt="India Post Logo">
                 <h3>HIARM RECOVERY CALCULATION - SCSS ACCOUNT</h3>
@@ -464,9 +400,19 @@
                 <span>Closure Date: <span id="out-closure-date"></span></span>
             </div>
 
+            <div class="basis-box">
+                <strong>Calculation Basis:</strong>
+                <ul>
+                    <li>SCSS interest up to date of death.</li>
+                    <li>POSA interest from the day after death up to maturity/closure, as applicable.</li>
+                    <li>Post-Maturity Interest calculated separately where applicable.</li>
+                    <li>Amounts rounded to nearest rupee.</li>
+                </ul>
+            </div>
+
             <div class="report-section">
-                <h4>1. TOTAL INTEREST PAID BY SYSTEM (OVERPAYMENT)</h4>
-                <div class="calculation-note" id="out-auto-note">Automated Finacle calculation based on account remaining active up to closure/maturity.</div>
+                <h4>1. INTEREST CREDITED BY SYSTEM</h4>
+                <div class="calculation-note" id="out-auto-note">Interest credited by system based on account remaining active.</div>
                 <table>
                     <thead>
                         <tr>
@@ -475,18 +421,17 @@
                         </tr>
                     </thead>
                     <tbody id="payout-table-body">
-                        <!-- Dynamic Rows Injected Here -->
                     </tbody>
                     <tr class="final-row">
-                        <td><strong>TOTAL SYSTEM PAYOUT TO RECOVER</strong></td>
+                        <td><strong>TOTAL INTEREST CREDITED</strong></td>
                         <td class="amount-col"><strong>₹<span id="out-system-paid"></span></strong></td>
                     </tr>
                 </table>
             </div>
 
             <div class="report-section">
-                <h4>2. TRUE LEGAL ENTITLEMENT (STRICT DAILY CALCULATION)</h4>
-                <div class="calculation-note">Auditor rule: Exact daily earnings separated into pre-death (SCSS) and post-death (POSA) periods.</div>
+                <h4>2. INTEREST ADMISSIBLE AS PER CALCULATION</h4>
+                <div class="calculation-note">Interest calculated on a day-wise basis for the SCSS period and eligible POSA period.</div>
                 <table>
                     <tr>
                         <th>Component</th>
@@ -511,53 +456,57 @@
             </div>
 
             <div class="report-section">
-                <h4>3. NET DIFFERENCE (FINAL HIARM DEBIT ENTRY)</h4>
-                <div class="calculation-note">The exact adjustment amount to be authorized via HIARM to balance the SCSS ledger.</div>
+                <h4>3. EXCESS INTEREST IDENTIFIED FOR RECOVERY</h4>
+                <div class="calculation-note">The calculated difference between interest credited and interest admissible.</div>
                 <table>
                     <tr>
-                        <td>Total Overpaid by Finacle</td>
+                        <td>Total Interest Credited</td>
                         <td class="amount-col">₹<span id="out-system-paid-2"></span></td>
                     </tr>
                     <tr>
-                        <td>Less: True Total Legal Entitlement</td>
+                        <td>Less: Interest Admissible</td>
                         <td class="amount-col">- ₹<span id="out-total-entitlement-2"></span></td>
                     </tr>
                     <tr class="recovery-row">
-                        <td><strong>NET RECOVERY AMOUNT (HIARM DEBIT)</strong></td>
+                        <td><strong>NET EXCESS PAYMENT</strong></td>
                         <td class="amount-col"><strong>₹<span id="out-recovery-amount"></span></strong></td>
                     </tr>
                 </table>
             </div>
 
             <div class="report-section">
-                <h4>4. NET FINAL SETTLEMENT AMOUNT</h4>
-                <div class="calculation-note">The net final payout amount adjusted for the excess interest already credited. Includes Post-Maturity Interest (PMI) if the account remained open beyond 5 years.</div>
+                <h4>4. FINAL AMOUNT PAYABLE</h4>
+                <div class="calculation-note">The net final payout amount adjusted for the interest already credited and applicable Post-Maturity Interest.</div>
                 <table>
                     <tr>
-                        <td>Principal Deposit</td>
+                        <td>Principal Amount</td>
                         <td class="amount-col">₹<span id="out-final-principal"></span></td>
                     </tr>
                     <tr>
-                        <td>Add: Total Valid Entitlement (from above)</td>
-                        <td class="amount-col">+ ₹<span id="out-final-entitlement"></span></td>
-                    </tr>
-                    <tr id="row-pmi" style="display:none;">
-                        <td>Add: Post-Maturity Interest (PMI) [<span id="out-pmi-period"></span>]</td>
-                        <td class="amount-col">+ ₹<span id="out-pmi-amount"></span></td>
+                        <td>Interest Admissible</td>
+                        <td class="amount-col">₹<span id="out-final-entitlement"></span></td>
                     </tr>
                     <tr>
-                        <td>Less: Interest Already Credited (System Payout)</td>
+                        <td>Less: Interest Already Credited</td>
                         <td class="amount-col">- ₹<span id="out-final-system-paid"></span></td>
                     </tr>
+                    <tr style="background-color: #f1f2f6;">
+                        <td><strong>Net Interest Adjustment</strong></td>
+                        <td class="amount-col"><strong><span id="out-net-interest-adj"></span></strong></td>
+                    </tr>
+                    <tr id="row-pmi" style="display:none;">
+                        <td>Add: Post-Maturity Interest [<span id="out-pmi-period"></span>]</td>
+                        <td class="amount-col">+ ₹<span id="out-pmi-amount"></span></td>
+                    </tr>
                     <tr class="settlement-row">
-                        <td><strong>NET FINAL SETTLEMENT (PAYABLE TO CLAIMANT)</strong></td>
+                        <td><strong>FINAL AMOUNT PAYABLE</strong></td>
                         <td class="amount-col"><strong>₹<span id="out-final-settlement"></span></strong></td>
                     </tr>
                 </table>
             </div>
             
             <div class="footer-note">
-                <strong>Note to Operator:</strong> Execute the Net Recovery Amount as a HIARM Debit to perfectly balance the SCSS ledger up to the End Date. If the account crossed maturity, the Post-Maturity Interest (PMI) calculated above will be automatically disbursed by Finacle during final closure.
+                <strong>Note:</strong> The excess interest amount shown above may be recovered through the prescribed accounting procedure after verification of records.
             </div>
         </div>
     </div>
@@ -641,7 +590,7 @@
             let payouts = [];
 
             if (document.getElementById('check-override').checked) {
-                document.getElementById('out-auto-note').textContent = "System payment amounts provided via manual override.";
+                document.getElementById('out-auto-note').textContent = "Interest credited based on manual verification.";
                 
                 const entryRows = document.querySelectorAll('.manual-entry-row');
                 entryRows.forEach(row => {
@@ -659,7 +608,7 @@
                 }
 
             } else {
-                document.getElementById('out-auto-note').textContent = "Automated Finacle calculation based on account remaining active up to closure/maturity.";
+                document.getElementById('out-auto-note').textContent = "Interest credited by system based on account remaining active.";
                 const quarterlyInterest = Math.round((principal * scssRate) / 400); 
                 const monthlyInterest = ((principal * scssRate) / 400) / 3;
 
@@ -739,7 +688,7 @@
             let pmiAmount = 0;
             
             if (closureDate > maturityDate) {
-                pmiDays = dateDiffInDays(maturityDate, closureDate); // excludes closure day
+                pmiDays = dateDiffInDays(maturityDate, closureDate); 
                 pmiAmount = Math.round((principal * posaRate * pmiDays) / 36500);
                 
                 const pmiEndDate = addDaysToDate(closureDate, -1);
@@ -753,6 +702,8 @@
             }
 
             const finalSettlement = principal + totalEntitlement + pmiAmount - systemPaid;
+            const netInterestAdj = totalEntitlement - systemPaid;
+            const netInterestAdjStr = netInterestAdj < 0 ? `- ₹${formatIN.format(Math.abs(netInterestAdj))}` : `₹${formatIN.format(netInterestAdj)}`;
 
             document.getElementById('out-name').textContent = name;
             document.getElementById('out-acc').textContent = acc;
@@ -792,6 +743,7 @@
             document.getElementById('out-final-principal').textContent = formatIN.format(principal);
             document.getElementById('out-final-entitlement').textContent = formatIN.format(totalEntitlement);
             document.getElementById('out-final-system-paid').textContent = formatIN.format(systemPaid);
+            document.getElementById('out-net-interest-adj').textContent = netInterestAdjStr;
             document.getElementById('out-final-settlement').textContent = formatIN.format(finalSettlement);
 
             document.getElementById('report-wrapper').style.display = 'block';
