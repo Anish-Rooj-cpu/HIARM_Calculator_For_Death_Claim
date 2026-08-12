@@ -68,31 +68,59 @@ function calculatePLI() {
     const monthlyRebate = Math.floor(sa / 20000) * 1; 
     const periodRebate = monthlyRebate * multiplier;
 
-    function getEARate(dur) {
-        const rates = [
+    function getEARate(dur, entryAge) {
+        // We use the two known ground truth sets (Age 29 and Age 49) as 2D anchor curves.
+        const age29Rates = [
+            { d: 5, r: 17.00 },
+            { d: 6, r: 14.40 },
+            { d: 9, r: 9.60 },
+            { d: 11, r: 7.60 },
+            { d: 16, r: 5.20 },
+            { d: 21, r: 3.80 },
+            { d: 26, r: 3.00 },
+            { d: 29, r: 2.60 },
+            { d: 31, r: 2.60 }
+        ];
+
+        const age49Rates = [
             { d: 5, r: 17.40 },
             { d: 6, r: 14.60 },
             { d: 9, r: 9.80 },
-            { d: 10, r: 8.60 },
             { d: 11, r: 8.00 },
-            { d: 15, r: 5.60 },
-            { d: 16, r: 5.20 },
-            { d: 18, r: 4.60 },
-            { d: 20, r: 4.20 },
-            { d: 21, r: 3.80 },
-            { d: 26, r: 3.00 }
+            { d: 16, r: 5.60 },
+            { d: 21, r: 4.20 },
+            { d: 26, r: 3.40 },
+            { d: 29, r: 3.00 },
+            { d: 31, r: 3.00 }
         ];
-        const exact = rates.find(x => x.d === dur);
-        if (exact) return exact.r;
-        if (dur < rates[0].d) return rates[0].r + (dur - rates[0].d) * ((rates[1].r - rates[0].r) / (rates[1].d - rates[0].d));
-        if (dur > rates[rates.length-1].d) return rates[rates.length-1].r + (dur - rates[rates.length-1].d) * ((rates[rates.length-1].r - rates[rates.length-2].r) / (rates[rates.length-1].d - rates[rates.length-2].d));
-        for (let i = 0; i < rates.length - 1; i++) {
-            if (dur > rates[i].d && dur < rates[i+1].d) {
-                const ratio = (dur - rates[i].d) / (rates[i+1].d - rates[i].d);
-                return rates[i].r + ratio * (rates[i+1].r - rates[i].r);
+
+        function interpolate1D(d, rates) {
+            const exact = rates.find(x => x.d === d);
+            if (exact) return exact.r;
+            if (d <= rates[0].d) return rates[0].r + (d - rates[0].d) * ((rates[1].r - rates[0].r) / (rates[1].d - rates[0].d));
+            if (d >= rates[rates.length-1].d) return rates[rates.length-1].r + (d - rates[rates.length-1].d) * ((rates[rates.length-1].r - rates[rates.length-2].r) / (rates[rates.length-1].d - rates[rates.length-2].d));
+            for (let i = 0; i < rates.length - 1; i++) {
+                if (d > rates[i].d && d < rates[i+1].d) {
+                    const ratio = (d - rates[i].d) / (rates[i+1].d - rates[i].d);
+                    return rates[i].r + ratio * (rates[i+1].r - rates[i].r);
+                }
             }
         }
-        return (1000 / (dur * 12));
+
+        // Interpolate along duration for both anchor ages
+        const rateAt29 = interpolate1D(dur, age29Rates);
+        const rateAt49 = interpolate1D(dur, age49Rates);
+        
+        // 2D Interpolate across entry ages
+        // For ages 40 and below, the rates are flat (no older-age mortality penalty).
+        let ageRatio = 0;
+        if (entryAge > 40) {
+            ageRatio = (entryAge - 40) / (49 - 40);
+        }
+        
+        let finalRate = rateAt29 + ageRatio * (rateAt49 - rateAt29);
+        
+        return finalRate;
     }
 
     maturityAges.forEach(matAge => {
@@ -103,7 +131,7 @@ function calculatePLI() {
             optionsGenerated = true;
 
             // Retrieve accurate official base rate via linear interpolation
-            let baseMonthlyPremiumPerThousand = getEARate(duration); 
+            let baseMonthlyPremiumPerThousand = getEARate(duration, age); 
             let grossMonthlyPremium = (sa / 1000) * baseMonthlyPremiumPerThousand;
             let grossPeriodPremium = grossMonthlyPremium * multiplier;
             
