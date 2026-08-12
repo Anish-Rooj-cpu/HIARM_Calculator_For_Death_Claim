@@ -7,17 +7,16 @@ function calculateAgeFromDOB() {
     const dob = new Date(dobStr);
     const today = new Date();
     
-    // Determine the end of the current financial year (March 31st)
-    let targetYear = today.getFullYear();
-    if (today.getMonth() >= 3) { // April to December
-        targetYear += 1;
-    }
+    // Age they turn THIS calendar year
+    let age = today.getFullYear() - dob.getFullYear();
     
-    let age = targetYear - dob.getFullYear();
+    const m = today.getMonth() - dob.getMonth();
+    const isBirthdayPassed = m > 0 || (m === 0 && today.getDate() >= dob.getDate());
     
-    // If DOB is after March 31st (April-Dec), they won't have had their birthday yet by March 31st of the target year.
-    if (dob.getMonth() > 2) {
-        age--;
+    // If their birthday has already passed this year, their next birthday will be next year (age + 1)
+    // If their birthday hasn't passed yet, their next birthday is this year (age)
+    if (isBirthdayPassed) {
+        age++;
     }
 
     if (age >= 0) {
