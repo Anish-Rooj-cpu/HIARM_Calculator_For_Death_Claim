@@ -69,40 +69,74 @@ function calculatePLI() {
     const periodRebate = monthlyRebate * multiplier;
 
     function getEARate(dur, entryAge) {
-        // Flat baseline curve for all entry ages 19 to 46
-        const baselineRates = [
-            { d: 5, r: 17.40 }, // Extrapolated safely
-            { d: 6, r: 14.40 },
-            { d: 9, r: 9.60 },
-            { d: 11, r: 7.60 },
-            { d: 12, r: 7.20 },
-            { d: 14, r: 6.20 },
-            { d: 15, r: 5.40 },
-            { d: 16, r: 5.20 },
-            { d: 20, r: 4.00 },
-            { d: 21, r: 3.80 },
-            { d: 25, r: 3.20 },
-            { d: 26, r: 3.00 },
-            { d: 30, r: 2.60 },
-            { d: 31, r: 2.60 }
-        ];
-
-        // Elevated mortality curve for age 49 (and extrapolated for higher ages)
-        const olderAgeRates = [
-            { d: 5, r: 17.60 },
-            { d: 6, r: 14.60 },
-            { d: 9, r: 9.80 },
-            { d: 11, r: 8.00 },
-            { d: 12, r: 7.60 },
-            { d: 14, r: 6.60 },
-            { d: 15, r: 5.80 },
-            { d: 16, r: 5.60 },
-            { d: 20, r: 4.40 },
-            { d: 21, r: 4.20 },
-            { d: 25, r: 3.60 },
-            { d: 26, r: 3.40 },
-            { d: 30, r: 3.00 },
-            { d: 31, r: 3.00 }
+        // Complete 2D Matrix of PLI EA Rates based on Ground Truths
+        const ratesMatrix = [
+            {
+                age: 40, // Base curve (applies for all ages <= 40)
+                rates: [
+                    { d: 5, r: 17.40 }, 
+                    { d: 6, r: 14.40 },
+                    { d: 9, r: 9.20 }, // estimated
+                    { d: 11, r: 7.60 },
+                    { d: 12, r: 6.80 }, // estimated
+                    { d: 14, r: 5.80 },
+                    { d: 15, r: 5.40 },
+                    { d: 16, r: 5.20 },
+                    { d: 19, r: 4.20 },
+                    { d: 20, r: 4.00 },
+                    { d: 21, r: 3.80 },
+                    { d: 24, r: 3.20 },
+                    { d: 25, r: 3.20 },
+                    { d: 26, r: 3.00 },
+                    { d: 29, r: 2.60 },
+                    { d: 30, r: 2.60 },
+                    { d: 31, r: 2.60 }
+                ]
+            },
+            {
+                age: 46,
+                rates: [
+                    { d: 5, r: 17.50 }, 
+                    { d: 6, r: 14.50 },
+                    { d: 9, r: 9.60 }, 
+                    { d: 11, r: 7.80 },
+                    { d: 12, r: 7.20 },
+                    { d: 14, r: 6.20 },
+                    { d: 15, r: 5.80 }, 
+                    { d: 16, r: 5.40 },
+                    { d: 19, r: 4.50 },
+                    { d: 20, r: 4.20 },
+                    { d: 21, r: 4.00 },
+                    { d: 24, r: 3.50 },
+                    { d: 25, r: 3.40 },
+                    { d: 26, r: 3.20 },
+                    { d: 29, r: 2.80 },
+                    { d: 30, r: 2.80 },
+                    { d: 31, r: 2.80 }
+                ]
+            },
+            {
+                age: 49,
+                rates: [
+                    { d: 5, r: 17.60 },
+                    { d: 6, r: 14.60 },
+                    { d: 9, r: 9.80 },
+                    { d: 11, r: 8.00 },
+                    { d: 12, r: 7.60 },
+                    { d: 14, r: 6.60 },
+                    { d: 15, r: 6.20 },
+                    { d: 16, r: 5.80 },
+                    { d: 19, r: 4.80 },
+                    { d: 20, r: 4.40 },
+                    { d: 21, r: 4.20 },
+                    { d: 24, r: 3.80 },
+                    { d: 25, r: 3.60 },
+                    { d: 26, r: 3.40 },
+                    { d: 29, r: 3.00 },
+                    { d: 30, r: 3.00 },
+                    { d: 31, r: 3.00 }
+                ]
+            }
         ];
 
         function interpolate1D(d, rates) {
@@ -118,20 +152,27 @@ function calculatePLI() {
             }
         }
 
-        // Interpolate along duration for both anchor curves
-        const baseRate = interpolate1D(dur, baselineRates);
-        const oldRate = interpolate1D(dur, olderAgeRates);
+        // Bracket the entry age
+        let lowerCurve = ratesMatrix[0];
+        let upperCurve = ratesMatrix[0];
         
-        // 2D Interpolate across entry ages
-        // The baseline applies flatly for all ages up to 46.
-        let ageRatio = 0;
-        if (entryAge > 46) {
-            ageRatio = (entryAge - 46) / (49 - 46);
+        if (entryAge > 40 && entryAge <= 46) {
+            lowerCurve = ratesMatrix[0];
+            upperCurve = ratesMatrix[1];
+        } else if (entryAge > 46) {
+            lowerCurve = ratesMatrix[1];
+            upperCurve = ratesMatrix[2];
+        }
+
+        const rateLower = interpolate1D(dur, lowerCurve.rates);
+        const rateUpper = interpolate1D(dur, upperCurve.rates);
+        
+        if (lowerCurve.age === upperCurve.age) {
+            return rateLower; // Flat baseline
         }
         
-        let finalRate = baseRate + ageRatio * (oldRate - baseRate);
-        
-        return finalRate;
+        const ageRatio = (entryAge - lowerCurve.age) / (upperCurve.age - lowerCurve.age);
+        return rateLower + ageRatio * (rateUpper - rateLower);
     }
 
     maturityAges.forEach(matAge => {
