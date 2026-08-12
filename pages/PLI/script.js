@@ -69,28 +69,39 @@ function calculatePLI() {
     const periodRebate = monthlyRebate * multiplier;
 
     function getEARate(dur, entryAge) {
-        // We use the two known ground truth sets (Age 29 and Age 49) as 2D anchor curves.
-        const age29Rates = [
-            { d: 5, r: 17.00 },
+        // Flat baseline curve for all entry ages 19 to 46
+        const baselineRates = [
+            { d: 5, r: 17.40 }, // Extrapolated safely
             { d: 6, r: 14.40 },
             { d: 9, r: 9.60 },
             { d: 11, r: 7.60 },
+            { d: 12, r: 7.20 },
+            { d: 14, r: 6.20 },
+            { d: 15, r: 5.40 },
             { d: 16, r: 5.20 },
+            { d: 20, r: 4.00 },
             { d: 21, r: 3.80 },
+            { d: 25, r: 3.20 },
             { d: 26, r: 3.00 },
-            { d: 29, r: 2.60 },
+            { d: 30, r: 2.60 },
             { d: 31, r: 2.60 }
         ];
 
-        const age49Rates = [
-            { d: 5, r: 17.40 },
+        // Elevated mortality curve for age 49 (and extrapolated for higher ages)
+        const olderAgeRates = [
+            { d: 5, r: 17.60 },
             { d: 6, r: 14.60 },
             { d: 9, r: 9.80 },
             { d: 11, r: 8.00 },
+            { d: 12, r: 7.60 },
+            { d: 14, r: 6.60 },
+            { d: 15, r: 5.80 },
             { d: 16, r: 5.60 },
+            { d: 20, r: 4.40 },
             { d: 21, r: 4.20 },
+            { d: 25, r: 3.60 },
             { d: 26, r: 3.40 },
-            { d: 29, r: 3.00 },
+            { d: 30, r: 3.00 },
             { d: 31, r: 3.00 }
         ];
 
@@ -107,18 +118,18 @@ function calculatePLI() {
             }
         }
 
-        // Interpolate along duration for both anchor ages
-        const rateAt29 = interpolate1D(dur, age29Rates);
-        const rateAt49 = interpolate1D(dur, age49Rates);
+        // Interpolate along duration for both anchor curves
+        const baseRate = interpolate1D(dur, baselineRates);
+        const oldRate = interpolate1D(dur, olderAgeRates);
         
         // 2D Interpolate across entry ages
-        // For ages 40 and below, the rates are flat (no older-age mortality penalty).
+        // The baseline applies flatly for all ages up to 46.
         let ageRatio = 0;
-        if (entryAge > 40) {
-            ageRatio = (entryAge - 40) / (49 - 40);
+        if (entryAge > 46) {
+            ageRatio = (entryAge - 46) / (49 - 46);
         }
         
-        let finalRate = rateAt29 + ageRatio * (rateAt49 - rateAt29);
+        let finalRate = baseRate + ageRatio * (oldRate - baseRate);
         
         return finalRate;
     }
