@@ -171,14 +171,46 @@ function calculateHIARM() {
     
     const scssDays = dateDiffInDays(startDate, deathDate) + 1;
     
-    // Calculate days in the quarter for the manual formula
-    const nextQuarterStart = new Date(startDate.valueOf());
+    let nextQuarterStart = new Date(startDate.valueOf());
     nextQuarterStart.setUTCMonth(nextQuarterStart.getUTCMonth() + 3);
-    const daysInQuarter = dateDiffInDays(startDate, nextQuarterStart);
     
-    // Use Post Office manual formula for part of a quarter:
-    // (Number of days in the period x Interest for the quarter) / Total number of days in the quarter
-    const qInterest = Math.round((principal * scssRate) / 400);
+    let daysInQuarter;
+    let qInterest;
+
+    if (nextQuarterStart > maturityDate) {
+        // Quarter is truncated by maturity
+        daysInQuarter = dateDiffInDays(startDate, maturityDate) + 1;
+        
+        // Calculate the exact broken amount the system would pay for this truncated quarter
+        let brokenAmount = 0;
+        let iterDate = new Date(startDate.valueOf());
+        const monthlyInterest = ((principal * scssRate) / 400) / 3;
+        
+        while (true) {
+            let nextMonth = new Date(iterDate.valueOf());
+            nextMonth.setUTCMonth(nextMonth.getUTCMonth() + 1);
+
+            if (nextMonth <= maturityDate) {
+                brokenAmount += monthlyInterest;
+                iterDate = new Date(nextMonth.valueOf());
+            } else {
+                let year = iterDate.getUTCFullYear();
+                let month = iterDate.getUTCMonth() + 1; 
+                let daysInMonth = new Date(year, month, 0).getDate();
+                let remainingDays = maturityDate.getUTCDate() - iterDate.getUTCDate();
+                if(remainingDays > 0) {
+                    brokenAmount += monthlyInterest * (remainingDays / daysInMonth);
+                }
+                break;
+            }
+        }
+        qInterest = Math.round(brokenAmount);
+    } else {
+        // Full normal quarter
+        daysInQuarter = dateDiffInDays(startDate, nextQuarterStart);
+        qInterest = Math.round((principal * scssRate) / 400);
+    }
+
     const scssAmount = Math.round((scssDays * qInterest) / daysInQuarter);
     
     let posaCutoffDate = (maturityDate < closureDate) ? maturityDate : closureDate;
