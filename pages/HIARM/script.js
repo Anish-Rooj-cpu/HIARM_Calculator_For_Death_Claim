@@ -170,7 +170,16 @@ function calculateHIARM() {
     }
     
     const scssDays = dateDiffInDays(startDate, deathDate) + 1;
-    const scssAmount = Math.round((principal * scssRate * scssDays) / 36500);
+    
+    // Calculate days in the quarter for the manual formula
+    const nextQuarterStart = new Date(startDate.valueOf());
+    nextQuarterStart.setUTCMonth(nextQuarterStart.getUTCMonth() + 3);
+    const daysInQuarter = dateDiffInDays(startDate, nextQuarterStart);
+    
+    // Use Post Office manual formula for part of a quarter:
+    // (Number of days in the period x Interest for the quarter) / Total number of days in the quarter
+    const qInterest = Math.round((principal * scssRate) / 400);
+    const scssAmount = Math.round((scssDays * qInterest) / daysInQuarter);
     
     let posaCutoffDate = (maturityDate < closureDate) ? maturityDate : closureDate;
     let posaEndDate = addDaysToDate(posaCutoffDate, -1);
